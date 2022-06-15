@@ -12,10 +12,10 @@ ShapeFitter::ShapeFitter(TH1F* histo)
 
 void ShapeFitter::Fit()
 {
-  const float left_external = ShapeFitter::mu - 15 * ShapeFitter::sigma;      //TODO make it settable
-  const float left_internal = ShapeFitter::mu - 8 * ShapeFitter::sigma;
-  const float right_internal = ShapeFitter::mu + 8 * ShapeFitter::sigma;
-  const float right_external = ShapeFitter::mu + 15 * ShapeFitter::sigma;
+  const float left_external = mu_ - 15 * sigma_;      //TODO make it settable
+  const float left_internal = mu_ - 8 * sigma_;
+  const float right_internal = mu_ + 8 * sigma_;
+  const float right_external = mu_ + 15 * sigma_;
 
   TH1F* histo_without_peak = ExcludeInterval(histo_all_, left_internal, right_internal);
   
@@ -143,7 +143,7 @@ void ShapeFitter::FitAll()
 void ShapeFitter::DefineAllFunc(float left, float right)
 {
   const int Npar_bckgr = 4;
-  const int Npar_sgnl = 10;
+  const int Npar_sgnl = 8;
   const int Npar = Npar_bckgr+Npar_sgnl;                                                        // TODO generalize # of parameters
   
   all_fit_ = new TF1("all_fit", AllShape, left, right, Npar);
@@ -258,18 +258,18 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 {
   const int Npar = 8;
   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-  sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu));
-  sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+  sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_));
+  sgnl_fit_ -> FixParameter(1, mu_);
   sgnl_fit_ -> SetParameter(2, 0);
-  sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma);
+  sgnl_fit_ -> SetParameter(3, sigma_);
   sgnl_fit_ -> SetParameter(4, 1.);
   sgnl_fit_ -> SetParameter(5, 1.);
   sgnl_fit_ -> SetParameter(6, 1.);
   sgnl_fit_ -> SetParameter(7, 1.);
-  sgnl_fit_ -> SetParLimits(0, 0, 10*histo->Interpolate(ShapeFitter::mu));
-  sgnl_fit_ -> SetParLimits(4, 0, 10);
+  sgnl_fit_ -> SetParLimits(0, 0, 10*histo->Interpolate(mu_));
+  sgnl_fit_ -> SetParLimits(4, 0, 100);
   sgnl_fit_ -> SetParLimits(5, 1, 100);
-  sgnl_fit_ -> SetParLimits(6, 1, 100);
+  sgnl_fit_ -> SetParLimits(6, 0, 100);
   sgnl_fit_ -> SetParLimits(7, 1, 100);
     
   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
@@ -285,13 +285,13 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 // //   MyFunctorShape myfuncsh;
 // //   sgnl_fit_ = new TF1("sgnl_fit", myfuncsh, left, right, Npar);
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::Gaus(0, 0, ShapeFitter::sigma));
-//   sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::Gaus(0, 0, sigma_));
+//   sgnl_fit_ -> FixParameter(1, mu_);
 //   sgnl_fit_ -> SetParameter(2, 0);
-//   sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma);
+//   sgnl_fit_ -> SetParameter(3, sigma_);
 //   const float x_shift = 1.3e-3;     // point where Exp() is pre-defined
-//   sgnl_fit_ -> SetParameter(4, histo->Interpolate(ShapeFitter::mu - x_shift) / TMath::Exp(-1000*x_shift));
-//   sgnl_fit_ -> SetParameter(5, histo->Interpolate(ShapeFitter::mu + x_shift) / TMath::Exp(-1000*x_shift));
+//   sgnl_fit_ -> SetParameter(4, histo->Interpolate(mu_ - x_shift) / TMath::Exp(-1000*x_shift));
+//   sgnl_fit_ -> SetParameter(5, histo->Interpolate(mu_ + x_shift) / TMath::Exp(-1000*x_shift));
 //   sgnl_fit_ -> SetParameter(6, 1000.);
 //   sgnl_fit_ -> SetParameter(7, -1000.);
 //     
@@ -347,13 +347,13 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 //   const int Npar = 10;
 //   
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::CauchyDist(0, 0, ShapeFitter::sigma));
-//   sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::CauchyDist(0, 0, sigma_));
+//   sgnl_fit_ -> FixParameter(1, mu_);
 //   sgnl_fit_ -> SetParameter(2, 0);
-//   sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma);
+//   sgnl_fit_ -> SetParameter(3, sigma_);
 //   const float x_shift = 1.3e-3;     // point where Exp() is pre-defined
-//   sgnl_fit_ -> SetParameter(4, histo->Interpolate(ShapeFitter::mu - x_shift) / TMath::Exp(-1000*x_shift));
-//   sgnl_fit_ -> SetParameter(5, histo->Interpolate(ShapeFitter::mu + x_shift) / TMath::Exp(-1000*x_shift));
+//   sgnl_fit_ -> SetParameter(4, histo->Interpolate(mu_ - x_shift) / TMath::Exp(-1000*x_shift));
+//   sgnl_fit_ -> SetParameter(5, histo->Interpolate(mu_ + x_shift) / TMath::Exp(-1000*x_shift));
 //   sgnl_fit_ -> SetParameter(6, 1000.);
 //   sgnl_fit_ -> SetParameter(7, -1000.);
 //   sgnl_fit_ -> FixParameter(8, 0.);
@@ -412,14 +412,14 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 //   const int Npar = 9;
 //   
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::Voigt(0, ShapeFitter::sigma/2, ShapeFitter::sigma/2));
-//   sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::Voigt(0, sigma_/2, sigma_/2));
+//   sgnl_fit_ -> FixParameter(1, mu_);
 //   sgnl_fit_ -> SetParameter(2, 0);
-//   sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma/2);
-//   sgnl_fit_ -> SetParameter(4, ShapeFitter::sigma/2);
+//   sgnl_fit_ -> SetParameter(3, sigma_/2);
+//   sgnl_fit_ -> SetParameter(4, sigma_/2);
 //   const float x_shift = 1.3e-3;     // point where Exp() is pre-defined
-//   sgnl_fit_ -> SetParameter(5, histo->Interpolate(ShapeFitter::mu - x_shift) / TMath::Exp(-1000*x_shift));
-//   sgnl_fit_ -> SetParameter(6, histo->Interpolate(ShapeFitter::mu + x_shift) / TMath::Exp(-1000*x_shift));
+//   sgnl_fit_ -> SetParameter(5, histo->Interpolate(mu_ - x_shift) / TMath::Exp(-1000*x_shift));
+//   sgnl_fit_ -> SetParameter(6, histo->Interpolate(mu_ + x_shift) / TMath::Exp(-1000*x_shift));
 //   sgnl_fit_ -> SetParameter(7, 1000.);
 //   sgnl_fit_ -> SetParameter(8, -1000.);
 //   
@@ -475,11 +475,11 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 //   const int Npar = 5;
 //   
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::Gaus(0, ShapeFitter::sigma/2, ShapeFitter::sigma) / 2.);
-//   sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::Gaus(0, sigma_/2, sigma_) / 2.);
+//   sgnl_fit_ -> FixParameter(1, mu_);
 //   sgnl_fit_ -> SetParameter(2, 0);
-//   sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma);
-//   sgnl_fit_ -> SetParameter(4, ShapeFitter::sigma/2);
+//   sgnl_fit_ -> SetParameter(3, sigma_);
+//   sgnl_fit_ -> SetParameter(4, sigma_/2);
 //   
 //   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
 // }
@@ -502,10 +502,10 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 //   const int Npar = 5;
 //   
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::CauchyDist(0, 0, ShapeFitter::sigma) / 2.);
-//   sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::CauchyDist(0, 0, sigma_) / 2.);
+//   sgnl_fit_ -> FixParameter(1, mu_);
 //   sgnl_fit_ -> SetParameter(2, 0);
-//   sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma);
+//   sgnl_fit_ -> SetParameter(3, sigma_);
 //   sgnl_fit_ -> FixParameter(4, 0);
 //   
 //   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
@@ -529,12 +529,12 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 //   const int Npar = 6;
 //   
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::Voigt(ShapeFitter::sigma/4, ShapeFitter::sigma/2, ShapeFitter::sigma/2) / 2.);
-//   sgnl_fit_ -> FixParameter(1, ShapeFitter::mu);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::Voigt(sigma_/4, sigma_/2, sigma_/2) / 2.);
+//   sgnl_fit_ -> FixParameter(1, mu_);
 //   sgnl_fit_ -> SetParameter(2, 0);
-//   sgnl_fit_ -> SetParameter(3, ShapeFitter::sigma/2);
-//   sgnl_fit_ -> SetParameter(4, ShapeFitter::sigma/2);
-//   sgnl_fit_ -> SetParameter(5, ShapeFitter::sigma/4);
+//   sgnl_fit_ -> SetParameter(3, sigma_/2);
+//   sgnl_fit_ -> SetParameter(4, sigma_/2);
+//   sgnl_fit_ -> SetParameter(5, sigma_/4);
 //   
 //   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
 // }
@@ -558,12 +558,12 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right)
 //   const int Npar = 6;
 //   
 //   sgnl_fit_ = new TF1("sgnl_fit", SgnlShape, left, right, Npar);
-//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(ShapeFitter::mu) / TMath::Voigt(0, ShapeFitter::sigma/2, ShapeFitter::sigma/2) / 2);
+//   sgnl_fit_ -> SetParameter(0, histo->Interpolate(mu_) / TMath::Voigt(0, sigma_/2, sigma_/2) / 2);
 //   sgnl_fit_ -> FixParameter(1, 1);
-//   sgnl_fit_ -> FixParameter(2, ShapeFitter::mu);
+//   sgnl_fit_ -> FixParameter(2, mu_);
 //   sgnl_fit_ -> SetParameter(3, 0);
-//   sgnl_fit_ -> SetParameter(4, ShapeFitter::sigma/2);
-//   sgnl_fit_ -> SetParameter(5, ShapeFitter::sigma/2);
+//   sgnl_fit_ -> SetParameter(4, sigma_/2);
+//   sgnl_fit_ -> SetParameter(5, sigma_/2);
 //   
 //   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
 // }

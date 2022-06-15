@@ -32,6 +32,9 @@ public:
   ShapeFitter(TH1F* histo);
   virtual ~ShapeFitter() = default;
   
+  void SetExpectedMu(float value) { mu_ = value; }
+  void SetExpectedSigma(float value) { sigma_ = value; }
+  
   TH1F* GetHistoSgnl() const { return histo_sgnl_; };
   TF1* GetFuncBckgr() const { return bckgr_fit_; };
   TF1* GetReFuncBckgr() const { return bckgr_refit_; };
@@ -88,7 +91,7 @@ private:
   float chi2_sgnl_fit_{-799.};
   float chi2_all_fit_{-799.};
   
-  const float mu = 1.115683;                     //TODO remove this hardcode
-  const float sigma = 0.00145786;  
+  float mu_ {1.115683};
+  float sigma_{0.00145786};  
 };
 #endif // ShapeFitter_H

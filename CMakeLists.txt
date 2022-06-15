@@ -29,9 +29,12 @@ find_package(QnTools REQUIRED)
 #add_executable(draw src/main.cc src/draw_functions.cc  src/json_reader.cc src/file_manager.cc)
 #target_link_libraries(draw QnTools::Base ${ROOT_LIBRARIES} ${Boost_LIBRARIES} )
 #
-set(SOURCES ShapeFitter.cpp)
+set(SOURCES ShapeFitter.cpp
+            Fitter.cpp
+            GraphExtractor.cpp)
             
 string(REPLACE ".cpp" ".hpp" HEADERS "${SOURCES}")
+list(APPEND HEADERS "Helper.hpp")
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
