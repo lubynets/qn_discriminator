@@ -16,27 +16,39 @@ float GetChi2TH1FTF1(TH1F* histo, TF1* func);
 float GetChi2TH1FTH1F(TH1F* histo1, TH1F* histo2);
 void SetAxesNames(TH3F* histo,
                   TString xaxisname="centrality, %",
-                  TString yaxisname="rapidity",
-                  TString zaxisname="p_{T}, GeV");
+                  TString yaxisname="p_{T}, GeV",
+                  TString zaxisname="rapidity");
 
 int main(int argc, char** argv)
 {
 //   TString allfilename="/home/user/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.nopid.lightcuts1.set4.all.root";
-//   TString allfilename="/home/user/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.310.all.root";
-  TString allfilename = "/home/user/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.3.3agev.recpid.lightcuts1.set4.3122.all.root";
-
+  TString allfilename="/home/user/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.310.all.root";
+//   TString allfilename = "/home/user/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.3.3agev.recpid.lightcuts1.set4.3122.all.root";
+  
+//   std::string number = "1";
+//   std::string number = "2";
+//   std::string number = "3";
+//   std::string number = "4";
+//   std::string number = "5";
+//   std::string number = "23";
+//   std::string number = "451";
+//   std::string number = "2345";
+//   std::string number = "12345";
+  
+//   TString allfilename = TString(("/home/user/cbmdir/working/qna/fairreview/3122_12agev/" + number + "/massDC.merged." + number + ".root").c_str());
+  
   TFile* allfile = TFile::Open(allfilename, "read");
 
 //   Qn::DataContainer<TH1F, Qn::Axis<double>> dcall = *(allfile -> Get<Qn::DataContainer<TH1F,Qn::Axis<double>>>("dcmass"));
 
   Qn::DataContainer<TH1F, Qn::Axis<double>> dcprimary = *(allfile -> Get<Qn::DataContainer<TH1F,Qn::Axis<double>>>("dcmass"));
-  auto dcall = dcprimary.Rebin({"centrality", {0,20,40,70}});
+  auto dcall = dcprimary.Rebin({"centrality", {0,10,20,40,70}});
 
-  const float mu = 1.115683;
-  const float sigma = 0.00145786;
+//   const float mu = 1.115683;
+//   const float sigma = 0.00145786;
   
-//   const float mu = 0.497;
-//   const float sigma = 0.0037;
+  const float mu = 0.497;
+  const float sigma = 0.0037;
   
   
 
@@ -68,7 +80,7 @@ int main(int argc, char** argv)
 //   ShapeContainerTensor sct;
 //   sct.SetFrame({C_nbins, y_nbins, pT_nbins});
 //   
-  TFile* fileOut = TFile::Open("shapetensor_fit.root", "recreate");
+  TFile* fileOut = TFile::Open(("shapetensor_fit." + number + ".root").c_str(), "recreate");
 //   fileOut -> mkdir("bckgr_mc_and_bckgr_rec_fit"); // is chi2 between (hchi2_bckgr_mc_and_bckgr_rec_fit)
 //   fileOut -> mkdir("sgnl_mc_and_sgnl_rec");       // is chi2 between (hchi2_sgnl_mc_and_sgnl_rec)
 //   fileOut -> mkdir("sgnl_mc_and_sgnl_mc_fit");    // is chi2 of fit  (hchi2_sgnl_mc_fit)
@@ -88,7 +100,7 @@ int main(int argc, char** argv)
     sct[i].SetChi2BckgrFit(sftr.GetChi2BckgrFit());
     
     std::vector indices = dcall.GetIndex(i);
-    std::string binname = "C" + StringBinNumber(indices.at(0)+1) + "_y" + StringBinNumber(indices.at(1)+1) + "_pT" + StringBinNumber(indices.at(2)+1);
+    std::string binname = "C" + StringBinNumber(indices.at(0)+1) + "_pT" + StringBinNumber(indices.at(1)+1) + "_y" + StringBinNumber(indices.at(2)+1);
     const float C_lo = dcall.GetAxis("centrality").GetLowerBinEdge(indices.at(0));
     const float C_hi = dcall.GetAxis("centrality").GetUpperBinEdge(indices.at(0));
     const float pT_lo = dcall.GetAxis("pT").GetLowerBinEdge(indices.at(1));

@@ -14,10 +14,10 @@
 
 
 std::string StringBinNumber(int number);
-void SetAxesNames(TH3F* histo,
-                  TString xaxisname="centrality, %",
-                  TString yaxisname="rapidity",
-                  TString zaxisname="p_{T}, GeV");
+// void SetAxesNames(TH3F* histo,
+//                   TString xaxisname="centrality, %",
+//                   TString yaxisname="rapidity",
+//                   TString zaxisname="p_{T}, GeV");
 
 int main(int argc, char** argv)
 {
@@ -25,19 +25,36 @@ int main(int argc, char** argv)
   
 //   TString shapefilename="/home/user/cbmdir/working/qna/shapes/shapetensor_fit.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.310.all.root";
 //   TString shapefilename="/home/user/cbmdir/working/qna/shapes/shapetensor_fit.apr20.dcmqgsm.3.3agev.recpid.lightcuts1.set4.3122.all.root";
-  TString shapefilename="/home/user/cbmdir/working/qna/shapes/shapetensor_fit.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
-  TFile* shapefile = TFile::Open(shapefilename, "read");
+//   TString shapefilename="/home/user/cbmdir/working/qna/shapes/shapetensor_fit.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
+  
+//   std::string number = "1";
+//   std::string number = "2";
+//   std::string number = "3";
+//   std::string number = "4";
+//   std::string number = "5";
+//   std::string number = "23";
+//   std::string number = "451";
+//   std::string number = "2345";
+  std::string number = "12345";
+  
+  
+  std::string shapefilename = "/home/user/cbmdir/working/qna/fairreview/3122_12agev/" + number + "/shapetensor_fit." + number + ".root";
+  
+  TFile* shapefile = TFile::Open(shapefilename.c_str(), "read");
   Qn::DataContainer<Qn::ShapeContainer, Qn::Axis<double>>* shcntr = (Qn::DataContainer<Qn::ShapeContainer, Qn::Axis<double>>*)shapefile -> Get("dcshape");
   
-  TString v1filename="/home/user/cbmdir/working/qna/correlations/aXmass/v1andR1.dcmqgsm.3.3agev.apr20.recpid.lightcuts1.3122.set4.root";
+//   TString v1filename="/home/user/cbmdir/working/qna/correlations/aXmass/v1andR1.dcmqgsm.3.3agev.apr20.recpid.lightcuts1.3122.set4.root";
 //   TString v1filename="/home/user/cbmdir/working/qna/correlations/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.3122.set4.all.root";
-  TFile* v1file = TFile::Open(v1filename, "read");
+  
+  std::string v1filename = "/home/user/cbmdir/working/qna/fairreview/3122_12agev/" + number + "/v1andR1." + number + ".root";
+  
+  TFile* v1file = TFile::Open(v1filename.c_str(), "read");
   
   std::string invmassaxis = "ReconstructedParticles_mass";
   
   std::vector<std::string> components = {"x1x1", "y1y1"};
   
-  TFile* fileOut = TFile::Open("out.fitter.root", "recreate");
+  TFile* fileOut = TFile::Open(("out.fitter." + number + ".root").c_str(), "recreate");
   TDirectory* dirFit = fileOut->mkdir("fit");
   TDirectory* dirPar = fileOut->mkdir("parameters");
   
@@ -87,7 +104,7 @@ int main(int argc, char** argv)
     for(int i=0; i<shcntr->size(); i++) {
       TGraphErrors* gr = gex.GetGraph(shcntr->GetIndex(i));
       std::vector indices = shcntr->GetIndex(i);
-      std::string binname = "C" + StringBinNumber(indices.at(0)+1) + "_y" + StringBinNumber(indices.at(1)+1) + "_pT" + StringBinNumber(indices.at(2)+1) + "." + co;
+      std::string binname = "C" + StringBinNumber(indices.at(0)+1) + "_pT" + StringBinNumber(indices.at(1)+1) + "_y" + StringBinNumber(indices.at(2)+1) + "." + co;
       const float C_lo = shcntr->GetAxis("centrality").GetLowerBinEdge(indices.at(0));
       const float C_hi = shcntr->GetAxis("centrality").GetUpperBinEdge(indices.at(0));
       const float pT_lo = shcntr->GetAxis("pT").GetLowerBinEdge(indices.at(1));
@@ -186,9 +203,9 @@ std::string StringBinNumber(int number)
     return std::to_string(number);
 }
 
-void SetAxesNames(TH3F* histo, TString xaxisname, TString yaxisname, TString zaxisname)
-{
-  histo -> GetXaxis() -> SetTitle(xaxisname);
-  histo -> GetYaxis() -> SetTitle(yaxisname);
-  histo -> GetZaxis() -> SetTitle(zaxisname);
-}
+// void SetAxesNames(TH3F* histo, TString xaxisname, TString yaxisname, TString zaxisname)
+// {
+//   histo -> GetXaxis() -> SetTitle(xaxisname);
+//   histo -> GetYaxis() -> SetTitle(yaxisname);
+//   histo -> GetZaxis() -> SetTitle(zaxisname);
+// }
