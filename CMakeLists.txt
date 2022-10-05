@@ -8,7 +8,7 @@ set(CMAKE_BUILD_TYPE RELEASE)
 
 list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})
 
-find_package( Boost REQUIRED COMPONENTS program_options regex )
+find_package( Boost REQUIRED COMPONENTS program_options )
 find_package(ROOT REQUIRED)
 
 if (NOT ROOT_FOUND)
@@ -57,4 +57,6 @@ ROOT_GENERATE_DICTIONARY( G__QnDiscriminator ${HEADERS}
 add_library(QnDiscriminator SHARED ${SOURCES} G__QnDiscriminator.cxx )
 target_link_libraries(QnDiscriminator PRIVATE QnTools::Base ${ROOT_LIBRARIES})
 
-add_subdirectory(exe)
+add_executable(run run.cpp)
+add_dependencies(run QnDiscriminator)
+target_link_libraries(run QnTools::Base ${ROOT_LIBRARIES} QnDiscriminator)
