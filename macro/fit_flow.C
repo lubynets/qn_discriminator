@@ -5,12 +5,16 @@ void fit_flow() {
 
   gROOT->Macro("/home/oleksii/cbmdir/flow_drawing_tools/example/style_1.cc");
 
-  std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.3122.root";
+//   std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.3122.root";
+//   std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.3122.set4.all.root";
+//   const float mu = 1.115683;
+
+  std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.310.root";
+  std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.310.set4.root";
+  const float mu = 0.497611;
 
   TFile* shapefile = TFile::Open(shapefilename.c_str(), "read");
   Qn::DataContainer<Qn::ShapeContainer, Qn::Axis<double>>* shcntr = (Qn::DataContainer<Qn::ShapeContainer, Qn::Axis<double>>*) shapefile->Get("ReFit");
-
-  std::string v1filename = "/home/oleksii/cbmdir/working/qna/correlations/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.3122.set4.all.root";
 
   TFile* v1file = TFile::Open(v1filename.c_str(), "read");
 
@@ -22,6 +26,7 @@ void fit_flow() {
   TDirectory* dirFit = fileOut->mkdir("Fits");
   TDirectory* dirPar = fileOut->mkdir("Params");
   TDirectory* dirChi2 = fileOut->mkdir("Chi2s");
+  TDirectory* dirEntries = fileOut->mkdir("Entries");
 
   Qn::DataContainerStatDiscriminator dc_entries_sgnl;
   dc_entries_sgnl.AddAxes(shcntr->GetAxes());
@@ -87,6 +92,7 @@ void fit_flow() {
       const float bckgr_weight = sumweights * bckgr_integral / (sgnl_integral + bckgr_integral);
 
       Fitter fitter;
+      fitter.SetMu(mu);
       fitter.SetShape(&shcntr->At(i));
       fitter.SetGraphToFit(gr);
       fitter.Fit();
@@ -101,10 +107,11 @@ void fit_flow() {
       fitter.GetGraphFit()->SetFillStyle(3001);
       fitter.GetGraphFit()->SetFillColor(kRed - 4);
       fitter.GetGraphFit()->SetLineColor(kRed);
-      fitter.GetGraphFit()->SetLineWidth(2);
       fitter.GetGraphFit()->Draw("l e3 same");
+      fitter.GetBckgrFit()->SetLineColor(kBlue);
+      fitter.GetBckgrFit()->Draw("l same");
 
-      TPaveText binedges(0.12, 0.75, 0.27, 0.89, "brNDC");
+      TPaveText binedges(0.10, 0.78, 0.25, 0.92, "brNDC");
       binedges.AddText(("C: " + to_string_with_precision(C_lo, 2) + " - " + to_string_with_precision(C_hi, 2) + " %").c_str());
       binedges.AddText(("p_{T}: " + to_string_with_precision(pT_lo, 2) + " - " + to_string_with_precision(pT_hi, 2) + " GeV/c").c_str());
       binedges.AddText(("y_{LAB}: " + to_string_with_precision(y_lo, 2) + " - " + to_string_with_precision(y_hi, 2)).c_str());
@@ -113,13 +120,13 @@ void fit_flow() {
       binedges.SetTextFont(22);
       binedges.Draw("same");
 
-      //       TLegend legend(0.12, 0.52, 0.27, 0.73);
-      //       legend.SetBorderSize(0);
-      //       legend.AddEntry(shFtr.GetReGraphAll(), "All Fit", "L");
-      //       legend.AddEntry(shFtr.GetReGraphBckgr(), "BG Fit", "L");
-      //       legend.SetTextSize(0.03);
-      //       legend.SetTextFont(22);
-      //       legend.Draw("same");
+      TLegend legend(0.12, 0.62, 0.27, 0.73);
+      legend.SetBorderSize(0);
+      legend.AddEntry(fitter.GetGraphFit(), "All Fit", "L");
+      legend.AddEntry(fitter.GetBckgrFit(), "BG Fit", "L");
+      legend.SetTextSize(0.03);
+      legend.SetTextFont(22);
+      legend.Draw("same");
 
       const float par_sgnl = fitter.GetFitParameters().at(0);
       const float parerr_sgnl = fitter.GetFitErrors().at(0);
@@ -130,24 +137,24 @@ void fit_flow() {
         par_bckgr.push_back(fitter.GetFitParameters().at(i + 1));
         parerr_bckgr.push_back(fitter.GetFitErrors().at(i + 1));
       }
-      TPaveText ptpar(0.72, 0.73, 0.87, 0.88, "brNDC");
-      ptpar.AddText(("v_{S} = " + to_string_with_precision(par_sgnl, 2) + " #pm " + to_string_with_precision(parerr_sgnl, 2)).c_str());
-      ptpar.AddText(("v_{BG} |_{m_{inv}=#mu} = " + to_string_with_precision(par_bckgr.at(0), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(0), 2)).c_str());
-      ptpar.AddText(("dv_{BG}/dm_{inv} |_{m_{inv}=#mu} = " + to_string_with_precision(par_bckgr.at(1), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(1), 2)).c_str());
+      TPaveText ptpar(0.76, 0.77, 0.91, 0.92, "brNDC");
+      ptpar.AddText(("v_{S} = " + to_string_with_precision(par_sgnl, 3) + " #pm " + to_string_with_precision(parerr_sgnl, 3)).c_str());
+      ptpar.AddText(("v_{BG} |_{m_{inv}=#mu} = " + to_string_with_precision(par_bckgr.at(0), 3) + " #pm " + to_string_with_precision(parerr_bckgr.at(0), 3)).c_str());
+      ptpar.AddText(("dv_{BG}/dm_{inv} |_{m_{inv}=#mu} = " + to_string_with_precision(par_bckgr.at(1), 3) + " #pm " + to_string_with_precision(parerr_bckgr.at(1), 3)).c_str());
       ptpar.SetFillColor(0);
       ptpar.SetTextSize(0.03);
       ptpar.SetTextFont(22);
       ptpar.Draw("same");
 
       const float chi2_fit = fitter.GetFitChi2Ndf();
-      TPaveText ptchi2(0.30, 0.79, 0.45, 0.89, "brNDC");
+      TPaveText ptchi2(0.30, 0.82, 0.45, 0.92, "brNDC");
       ptchi2.AddText(("#chi^{2}/_{ndf} Fit = " + to_string_with_precision(chi2_fit, 2)).c_str());
       ptchi2.SetFillColor(0);
       ptchi2.SetTextSize(0.03);
       ptchi2.SetTextFont(22);
       ptchi2.Draw("same");
 
-      TPaveText ptyield(0.12, 0.40, 0.27, 0.50, "brNDC");
+      TPaveText ptyield(0.12, 0.10, 0.27, 0.20, "brNDC");
       ptyield.AddText(("N_{sgnl} = " + to_string_with_precision(sgnl_weight, 0)).c_str());
       ptyield.AddText(("N_{bckgr} = " + to_string_with_precision(bckgr_weight, 0)).c_str());
       ptyield.SetFillColor(0);
@@ -182,18 +189,20 @@ void fit_flow() {
       dc_entries_bckgr[i].SetValue(bckgr_weight);
       dc_entries_bckgr[i].SetError(0);
       dc_entries_bckgr[i].SetWeight(bckgr_weight);
-
-      common_dc_for_all_components = true;
     }
 
     dirPar->cd();
-
     dc_signal.Write(("signal." + co).c_str());
     dc_bckgr_0.Write(("bckgr_0." + co).c_str());
     dc_bckgr_1.Write(("bckgr_1." + co).c_str());
+
+    dirChi2->cd();
     dc_fit_chi2ndf.Write(("fit_chi2ndf." + co).c_str());
+
+    common_dc_for_all_components = true;
   }
 
+  dirEntries->cd();
   dc_entries_sgnl.Write("entries_sgnl");
   dc_entries_bckgr.Write("entries_bckgr");
 

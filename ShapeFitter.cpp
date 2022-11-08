@@ -37,8 +37,6 @@ void ShapeFitter::Fit() {
   RedefineBckgrAndSgnl(left_external, right_external);
   regraph_bckgr_ = FuncWithErrors({bckgr_refit_, nullptr});
   regraph_sgnl_ = FuncWithErrors({sgnl_refit_, nullptr});
-  //   rehisto_bckgr_ = Func2Histo(bckgr_refit_);
-  //   rehisto_sgnl_ = Func2Histo(sgnl_refit_);
 }
 
 TH1F* ShapeFitter::ExcludeInterval(TH1F* histo, float left, float right) const {
@@ -107,21 +105,6 @@ TGraphErrors* ShapeFitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_co
   return graph;
 }
 
-// TH1F* ShapeFitter::Func2Histo(TF1* func) const {
-//   const int nbins = 1000;
-//   double left, right;
-//   func -> GetRange(left, right);
-//   TH1F* h = new TH1F();
-//   h -> SetBins(nbins, left, right);
-//   const float binwidth = (right-left)/nbins;
-//   for(int i=1; i<nbins; i++)   {
-//     const float x = left + binwidth*(i-0.5);
-//     h->SetBinContent(i, func->Eval(x));
-//   }
-//
-//   return h;
-// }
-
 void ShapeFitter::FitAll() {
   TFitResultPtr frptr = histo_all_->Fit(all_refit_, "RS0");
   *all_refit_cov_ = frptr->GetCovarianceMatrix();
@@ -169,17 +152,11 @@ void ShapeFitter::RedefineBckgrAndSgnl(float left, float right) {
   for (int i = 0; i < Npar_bckgr; i++) {
     bckgr_refit_->SetParameter(i, all_refit_->GetParameter(i));
     bckgr_refit_->SetParError(i, all_refit_->GetParError(i));
-    //     double minlimit, maxlimit;
-    //     all_refit_ -> GetParLimits(i, minlimit, maxlimit);
-    //     bckgr_refit_ -> SetParLimits(i, minlimit, maxlimit);
   }
 
   for (int i = 0; i < Npar_sgnl; i++) {
     sgnl_refit_->SetParameter(i, all_refit_->GetParameter(Npar_bckgr + i));
     sgnl_refit_->SetParError(i, all_refit_->GetParError(Npar_bckgr + i));
-    //     double minlimit, maxlimit;
-    //     all_refit_ -> GetParLimits(Npar_bckgr+i, minlimit, maxlimit);
-    //     sgnl_refit_ -> SetParLimits(i, minlimit, maxlimit);
   }
 }
 
