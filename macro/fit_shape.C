@@ -1,31 +1,23 @@
-std::string StringBinNumber(int number);
 float GetChi2TH1FTF1(TH1F* histo, TF1* func);
-void SetAxesNames(TH3F* histo,
-                  TString xaxisname="centrality, %",
-                  TString yaxisname="p_{T}, GeV",
-                  TString zaxisname="rapidity");
 
-template <typename T>
-std::string to_string_with_precision(T a_value, int n = 6);
+#include "Helper.hpp"
 
 void fit_shape() {
 
 //   gROOT->Macro( "/home/oleksii/cbmdir/flow_drawing_tools/example/style.cc" );
 
-  std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
-  
+//   std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
+//   const float mu = 1.115683;
+//   const float sigma = 0.00145786;
+
+  std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.310.all.root";
+  const float mu = 0.497611;
+  const float sigma = 0.0037;
+
   TFile* fileIn = TFile::Open(fileName.c_str(), "read");
 
   Qn::DataContainer<TH1F, Qn::Axis<double>> dcprimary = *(fileIn -> Get<Qn::DataContainer<TH1F,Qn::Axis<double>>>("dcmass"));
   auto dcIn = dcprimary.Rebin({"centrality", {0,10,20,40,70}});
-
-  const float mu = 1.115683;
-  const float sigma = 0.00145786;
-  
-//   const float mu = 0.497;
-//   const float sigma = 0.0037;
-  
-  
 
   //
   // all              shape of sgnl&bckgr together (the only distribution we will operate with in real life)
@@ -62,16 +54,13 @@ void fit_shape() {
   }
 
 
+  Qn::DataContainerStatDiscriminator dc_chi2_prefit;
+  dc_chi2_prefit.AddAxes(dcIn.GetAxes());
+
+  Qn::DataContainerStatDiscriminator dc_chi2_fit;
+  dc_chi2_fit.AddAxes(dcIn.GetAxes());
 
 
-  Qn::DataContainerStatDiscriminator dc_chi2_all_and_all_fit;
-  dc_chi2_all_and_all_fit.AddAxes(dcIn.GetAxes());
-
-  Qn::DataContainerStatDiscriminator dc_chi2_all_fit;
-  dc_chi2_all_fit.AddAxes(dcIn.GetAxes());
-
-
-//   
   TFile* fileOut = TFile::Open("fileOut.root", "recreate");
   fileOut -> mkdir("Fits");
   fileOut -> mkdir("Params/sgnl");
@@ -79,6 +68,22 @@ void fit_shape() {
   fileOut -> mkdir("Chi2s");
 
   for(int i=0; i<dcIn.size(); i++) {
+
+    std::vector<size_t> indices = dcIn.GetIndex(i);
+    std::string binname = "C" + StringBinNumber(indices.at(0)+1) + "_pT" + StringBinNumber(indices.at(1)+1) + "_y" + StringBinNumber(indices.at(2)+1);
+    const float C_lo = dcIn.GetAxis("centrality").GetLowerBinEdge(indices.at(0));
+    const float C_hi = dcIn.GetAxis("centrality").GetUpperBinEdge(indices.at(0));
+    const float pT_lo = dcIn.GetAxis("pT").GetLowerBinEdge(indices.at(1));
+    const float pT_hi = dcIn.GetAxis("pT").GetUpperBinEdge(indices.at(1));
+    const float y_lo = dcIn.GetAxis("y").GetLowerBinEdge(indices.at(2));
+    const float y_hi = dcIn.GetAxis("y").GetUpperBinEdge(indices.at(2));
+
+    std::cout << "DataContainer cell # " << i << "\n";
+    std::cout << binname << "\n";
+    std::cout << ("C: " + to_string_with_precision(C_lo, 2) + " - " + to_string_with_precision(C_hi, 2) + " %").c_str() << "\n";
+    std::cout << ("p_{T}: " + to_string_with_precision(pT_lo, 2) + " - " + to_string_with_precision(pT_hi, 2) + " GeV/c").c_str() << "\n";
+    std::cout << ("y_{LAB}: " + to_string_with_precision(y_lo, 2) + " - " + to_string_with_precision(y_hi, 2)).c_str() << "\n";
+
     ShapeFitter shFtr(&dcIn[i]);
     shFtr.SetExpectedMu(mu);
     shFtr.SetExpectedSigma(sigma);
@@ -90,15 +95,7 @@ void fit_shape() {
     dcPreFit[i].SetInputHisto(&dcIn[i]);
     dcPreFit[i].SetShape(shFtr.GetFuncSgnl(), shFtr.GetFuncBckgr());
     
-    std::vector<size_t> indices = dcIn.GetIndex(i);
-    std::string binname = "C" + StringBinNumber(indices.at(0)+1) + "_pT" + StringBinNumber(indices.at(1)+1) + "_y" + StringBinNumber(indices.at(2)+1);
-    const float C_lo = dcIn.GetAxis("centrality").GetLowerBinEdge(indices.at(0));
-    const float C_hi = dcIn.GetAxis("centrality").GetUpperBinEdge(indices.at(0));
-    const float pT_lo = dcIn.GetAxis("pT").GetLowerBinEdge(indices.at(1));
-    const float pT_hi = dcIn.GetAxis("pT").GetUpperBinEdge(indices.at(1));
-    const float y_lo = dcIn.GetAxis("y").GetLowerBinEdge(indices.at(2));
-    const float y_hi = dcIn.GetAxis("y").GetUpperBinEdge(indices.at(2));
-    
+
     fileOut -> cd("Fits");
     TCanvas cc("cc", "", 1500, 900);
     cc.cd();
@@ -116,12 +113,12 @@ void fit_shape() {
     shFtr.GetReGraphBckgr() -> Draw("l same");
 
     shFtr.GetGraphAll()->SetLineColor(kRed);
-    shFtr.GetGraphAll()->SetLineStyle(10);
+    shFtr.GetGraphAll()->SetLineStyle(2);
     shFtr.GetGraphAll()->SetLineWidth(2);
     shFtr.GetGraphAll() -> Draw("l x same");
     shFtr.GetGraphBckgr()->SetLineColor(kGreen+2);
     shFtr.GetGraphBckgr()->SetLineWidth(2);
-    shFtr.GetGraphBckgr()->SetLineStyle(10);
+    shFtr.GetGraphBckgr()->SetLineStyle(2);
     shFtr.GetGraphBckgr() -> Draw("l x same");
 
     TLegend legend(0.12, 0.52, 0.27, 0.73);
@@ -185,7 +182,7 @@ void fit_shape() {
 
     const float chi2_fit = shFtr.GetChi2AllFit();
     const float chi2_prefit = GetChi2TH1FTF1(&dcIn[i], shFtr.GetFuncAll());
-    TPaveText ptchi2(0.30, 0.55, 0.45, 0.65, "brNDC");
+    TPaveText ptchi2(0.30, 0.79, 0.45, 0.89, "brNDC");
     ptchi2.AddText(("#chi^{2}/_{ndf} Fit = " + to_string_with_precision(chi2_fit, 2)).c_str());
     ptchi2.AddText(("#chi^{2}/_{ndf} Pre-Fit = " + to_string_with_precision(chi2_prefit, 2)).c_str());
     ptchi2.SetFillColor(0);
@@ -198,6 +195,7 @@ void fit_shape() {
     TPaveText ptyield(0.12, 0.40, 0.27, 0.50, "brNDC");
     ptyield.AddText(("N_{sgnl}^{*} = " + to_string_with_precision(yield_sgnl, 0)).c_str());
     ptyield.AddText(("N_{bckgr} = " + to_string_with_precision(yield_bckgr, 0)).c_str());
+    ptyield.AddText(("S/B = " + to_string_with_precision(yield_sgnl/yield_bckgr, 2)).c_str());
     ptyield.SetFillColor(0);
     ptyield.SetTextSize(0.03);
     ptyield.SetTextFont(22);
@@ -205,8 +203,10 @@ void fit_shape() {
 
     cc.Write(binname.c_str());
 
-    dc_chi2_all_and_all_fit[i].SetVEW(GetChi2TH1FTF1(&dcIn[i], shFtr.GetFuncAll()));
-    dc_chi2_all_fit[i].SetVEW(shFtr.GetChi2AllFit());
+    dc_chi2_prefit[i].SetVEW(chi2_prefit);
+    dc_chi2_fit[i].SetVEW(chi2_fit);
+
+    std::cout << "\n\n";
   }
 //   
   fileOut -> cd();
@@ -215,17 +215,20 @@ void fit_shape() {
   std::vector<std::string> SgnlParamNames = {"Height", "mu", "mu_shift", "sigma", "a1", "n1", "a2", "n2"};
   std::vector<std::string> BckgrParamNames = {"p0", "p1", "p2", "p3"};
 
+  fileOut->cd("Params/sgnl");
   for(int j=0; j<SgnlParamNames.size(); j++) {
     dcParamsSgnl.at(j).Write(SgnlParamNames.at(j).c_str());
   }
 
+  fileOut->cd("Params/bckgr");
   for(int j=0; j<BckgrParamNames.size(); j++) {
     dcParamsBckgr.at(j).Write(BckgrParamNames.at(j).c_str());
   }
 
+  fileOut->cd("Chi2s");
+  dc_chi2_prefit.Write("chi2_prefit");
+  dc_chi2_fit.Write("chi2_fit");
 
-//   dc_chi2_all_and_all_fit.Write("chi2_all_and_all_fit");
-//   dc_chi2_all_fit.Write("chi2_all_fit");
   fileOut -> Close();
   fileIn -> Close();
   
@@ -256,25 +259,4 @@ float GetChi2TH1FTF1(TH1F* histo, TF1* func) {
   std::cout << "chi2/ndf h-f = " << chi2 << " / " << ndf << "\n";
   
   return chi2/ndf;
-}
-
-std::string StringBinNumber(int number) {
-  if(number<10)
-    return "0" + std::to_string(number);
-  else
-    return std::to_string(number);
-}
-
-void SetAxesNames(TH3F* histo, TString xaxisname, TString yaxisname, TString zaxisname) {
-  histo -> GetXaxis() -> SetTitle(xaxisname);
-  histo -> GetYaxis() -> SetTitle(yaxisname);
-  histo -> GetZaxis() -> SetTitle(zaxisname);
-}
-
-template <typename T>
-std::string to_string_with_precision(T a_value, int n) {
-    std::ostringstream out;
-    out.precision(n);
-    out << std::fixed << a_value;
-    return out.str();
 }

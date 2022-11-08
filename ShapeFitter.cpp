@@ -249,9 +249,9 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right) {
   sgnl_fit_ -> SetParameter(7, 1.);
   sgnl_fit_ -> SetParLimits(0, 0, 10*histo->Interpolate(mu_));
   sgnl_fit_ -> SetParLimits(4, 0, 100);
-  sgnl_fit_ -> SetParLimits(5, 1, 100);
+  sgnl_fit_ -> SetParLimits(5, 0, 100);
   sgnl_fit_ -> SetParLimits(6, 0, 100);
-  sgnl_fit_ -> SetParLimits(7, 1, 100);
+  sgnl_fit_ -> SetParLimits(7, 0, 100);
     
   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
 }

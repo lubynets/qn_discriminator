@@ -25,10 +25,8 @@ void Fitter::Fit()
   
   fit_chi2_ = f->GetChisquare();
   fit_ndf_ = f->GetNDF();
-  
-//   TF1* f2 = new TF1("f2", "[0] + [1]*(x-1.11572)", graphleft-0.01, graphright+0.01);  // contribution from bckgr to flow
-  
-  std::string formula = "[0] + [1]*(x-" + std::to_string(mu_) + ")";
+
+  std::string formula = "[0] + [1]*(x-" + std::to_string(mu_) + ")";          // TODO replace std::to_string(mu_) with another parameter [2]
   TF1* f2 = new TF1("f2", formula.c_str(), graphleft-0.01, graphright+0.01);  // contribution from bckgr to flow
   
   for(int i=0; i<Npar; i++)

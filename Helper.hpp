@@ -13,4 +13,11 @@ std::string to_string_with_precision(const T a_value, const int n = 6) {
   return out.str();
 }
 
+std::string StringBinNumber(int number) {
+  if(number<10)
+    return "0" + std::to_string(number);
+  else
+    return std::to_string(number);
+}
+
 #endif  //HELPER_H

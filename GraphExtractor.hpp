@@ -28,7 +28,6 @@ private:
   Qn::DataContainer<Qn::StatCalculate,Qn::Axis<double>>* data_container_{nullptr};
   std::vector<std::string> names_axes_to_exclude_;
   std::string select_axis_;
-//   int number_of_select_axis_;
 };
 
 #endif  //GraphExtractor_H
