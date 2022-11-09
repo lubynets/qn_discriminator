@@ -21,12 +21,10 @@ class ShapeFitter {
   TH1F* GetHistoSgnl() const { return histo_sgnl_; };
   TF1* GetFuncBckgr() const { return bckgr_fit_; };
   TF1* GetReFuncBckgr() const { return bckgr_refit_; };
-  //   TH1F* GetReHistoBckgr() const { return rehisto_bckgr_; };
   TGraphErrors* GetGraphBckgr() const { return graph_bckgr_; };
   TGraphErrors* GetReGraphBckgr() const { return regraph_bckgr_; };
   TF1* GetFuncSgnl() const { return sgnl_fit_; };
   TF1* GetReFuncSgnl() const { return sgnl_refit_; };
-  //   TH1F* GetReHistoSgnl() const { return rehisto_sgnl_; };
   TMatrixDSym* GetCovSgnl() const { return sgnl_fit_cov_; };// TODO need after debugging?
   TGraphErrors* GetGraphSgnl() const { return graph_sgnl_; };
   TGraphErrors* GetReGraphSgnl() const { return regraph_sgnl_; };
@@ -40,9 +38,9 @@ class ShapeFitter {
   float GetChi2AllFit() const { return chi2_all_fit_; };
 
  private:
-  void FitSgnl(TH1F* histo);                                                  // TODO move to private after debugging
-  void DefineSgnlFunc(TH1F* histo, float left, float right);                  // TODO move to private after debugging
-  TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;// TODO move to private after debugging
+  void FitSgnl(TH1F* histo);
+  void DefineSgnlFunc(TH1F* histo, float left, float right);
+  TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;
 
   // private:
 
@@ -54,19 +52,18 @@ class ShapeFitter {
   void FitAll();
   TH1F* SubtractBckgr(TH1F* histo, std::pair<TF1*, TMatrixDSym*> f_and_cov, float left, float right) const;
   float EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const;
-  //   TH1F* Func2Histo(TF1* func) const;
+
+//   double MyGetGradientPar(TF1* f, int i, double x, double eps=0.01) const;
 
   TH1F* histo_all_{nullptr};
   TH1F* histo_sgnl_{nullptr};
   TF1* bckgr_fit_{nullptr};
   TF1* bckgr_refit_{nullptr};
-  //   TH1F* rehisto_bckgr_{nullptr};        //TODO temporary solution. For some reasons functions are saved bad...
   TMatrixDSym* bckgr_fit_cov_{nullptr};
   TGraphErrors* graph_bckgr_{nullptr};
   TGraphErrors* regraph_bckgr_{nullptr};
   TF1* sgnl_fit_{nullptr};
   TF1* sgnl_refit_{nullptr};
-  //   TH1F* rehisto_sgnl_{nullptr};        //TODO temporary solution. For some reasons functions are saved bad...
   TMatrixDSym* sgnl_fit_cov_{nullptr};
   TGraphErrors* graph_sgnl_{nullptr};
   TGraphErrors* regraph_sgnl_{nullptr};

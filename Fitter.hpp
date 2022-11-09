@@ -48,10 +48,11 @@ class Fitter {
   void SetMu(float value) { mu_ = value; }
   void SetShape(Qn::ShapeContainer* shape) { shape_ = shape; };
   void SetGraphToFit(TGraphErrors* graph) { graph_v_ = graph; };
-  TF1* GetVFit() const { return v_fit_.first; };
   TGraphErrors* GetGraphToFit() const { return graph_v_; };
+  TF1* GetVFit() const { return v_fit_.first; };
   TGraphErrors* GetGraphFit() const { return graph_fit_; };
-  TF1* GetBckgrFit() const { return v_fit_bckgr_; };
+  TF1* GetBckgrFit() const { return v_fit_bckgr_.first; };
+  TGraphErrors* GetBckgrGraph() const { return graph_fit_bckgr_; };
   double GetVSignal() { return fit_params_.at(0); };
   double GetVSignalError() { return fit_params_errors_.at(0); };
   double GetFitChi2() { return fit_chi2_; };
@@ -68,9 +69,12 @@ class Fitter {
   Qn::ShapeContainer* shape_{nullptr};
   TGraphErrors* graph_v_{nullptr};// to be fitted
 
+//   double MyGetGradientPar(TF1* f, int i, double x, double eps=0.01) const;
+
   std::pair<TF1*, TMatrixDSym*> v_fit_{nullptr, nullptr};
   TGraphErrors* graph_fit_{nullptr};// result of fit with errors
-  TF1* v_fit_bckgr_{nullptr};// only bckgr's contribution to flow
+  std::pair<TF1*, TMatrixDSym*> v_fit_bckgr_{nullptr, nullptr};// only bckgr's contribution to flow
+  TGraphErrors* graph_fit_bckgr_{nullptr};// only bckgr's contribution to flow with errors
 
   std::vector<double> fit_params_;
   std::vector<double> fit_params_errors_;

@@ -5,13 +5,13 @@ void fit_flow() {
 
   gROOT->Macro("/home/oleksii/cbmdir/flow_drawing_tools/example/style_1.cc");
 
-//   std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.3122.root";
-//   std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.3122.set4.all.root";
-//   const float mu = 1.115683;
+  std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.3122.root";
+  std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.3122.set4.all.root";
+  const float mu = 1.115683;
 
-  std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.310.root";
-  std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.310.set4.root";
-  const float mu = 0.497611;
+//   std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.310.root";
+//   std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.310.set4.root";
+//   const float mu = 0.497611;
 
   TFile* shapefile = TFile::Open(shapefilename.c_str(), "read");
   Qn::DataContainer<Qn::ShapeContainer, Qn::Axis<double>>* shcntr = (Qn::DataContainer<Qn::ShapeContainer, Qn::Axis<double>>*) shapefile->Get("ReFit");
@@ -104,12 +104,14 @@ void fit_flow() {
       gr->GetYaxis()->SetTitle("v_{1}");
       gr->SetTitle(binname.c_str());
       gr->Draw("AP");
+      fitter.GetBckgrGraph()->SetFillStyle(3001);
+      fitter.GetBckgrGraph()->SetFillColor(kAzure + 8);
+      fitter.GetBckgrGraph()->SetLineColor(kBlue);
+      fitter.GetBckgrGraph()->Draw("l e3 same");
       fitter.GetGraphFit()->SetFillStyle(3001);
       fitter.GetGraphFit()->SetFillColor(kRed - 4);
       fitter.GetGraphFit()->SetLineColor(kRed);
       fitter.GetGraphFit()->Draw("l e3 same");
-      fitter.GetBckgrFit()->SetLineColor(kBlue);
-      fitter.GetBckgrFit()->Draw("l same");
 
       TPaveText binedges(0.10, 0.78, 0.25, 0.92, "brNDC");
       binedges.AddText(("C: " + to_string_with_precision(C_lo, 2) + " - " + to_string_with_precision(C_hi, 2) + " %").c_str());
@@ -123,7 +125,7 @@ void fit_flow() {
       TLegend legend(0.12, 0.62, 0.27, 0.73);
       legend.SetBorderSize(0);
       legend.AddEntry(fitter.GetGraphFit(), "All Fit", "L");
-      legend.AddEntry(fitter.GetBckgrFit(), "BG Fit", "L");
+      legend.AddEntry(fitter.GetBckgrGraph(), "BG Fit", "L");
       legend.SetTextSize(0.03);
       legend.SetTextFont(22);
       legend.Draw("same");
@@ -148,7 +150,7 @@ void fit_flow() {
 
       const float chi2_fit = fitter.GetFitChi2Ndf();
       TPaveText ptchi2(0.30, 0.82, 0.45, 0.92, "brNDC");
-      ptchi2.AddText(("#chi^{2}/_{ndf} Fit = " + to_string_with_precision(chi2_fit, 2)).c_str());
+      ptchi2.AddText(("#chi^{2}_{ndf} Fit = " + to_string_with_precision(chi2_fit, 2)).c_str());
       ptchi2.SetFillColor(0);
       ptchi2.SetTextSize(0.03);
       ptchi2.SetTextFont(22);

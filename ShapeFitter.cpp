@@ -71,13 +71,20 @@ TH1F* ShapeFitter::SubtractBckgr(TH1F* histo, std::pair<TF1*, TMatrixDSym*> f_an
 float ShapeFitter::EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const {// add check if npar of func is equal to dim cov
   const int Npar = f_and_cov.first->GetNpar();
   TMatrixD dfdp(Npar, 1);
-  for (int i = 0; i < Npar; i++)
+  for (int i = 0; i < Npar; i++) {
     dfdp[i][0] = f_and_cov.first->GradientPar(i, x);
+  }
 
   TMatrixD dfdp_T = dfdp;
   dfdp_T.T();
 
-  return std::sqrt((dfdp_T * (*f_and_cov.second) * dfdp)[0][0]);
+  float result = std::sqrt((dfdp_T * (*f_and_cov.second) * dfdp)[0][0]);
+
+  if(!std::isfinite(result)) {
+    result = 0.;
+  }
+
+  return result;
 }
 
 TGraphErrors* ShapeFitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const {
@@ -92,10 +99,12 @@ TGraphErrors* ShapeFitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_co
   while (x <= right) {
     const float y = f_and_cov.first->Eval(x);
     float ey;
-    if (f_and_cov.second != nullptr)
+    if (f_and_cov.second != nullptr) {
       ey = EvalError(&x, f_and_cov);
-    else
+    }
+    else {
       ey = 0.;
+    }
     graph->SetPoint(i, x, y);
     graph->SetPointError(i, 0, ey);
     x += step;
@@ -106,12 +115,14 @@ TGraphErrors* ShapeFitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_co
 }
 
 void ShapeFitter::FitAll() {
+  std::cout << "ShapeFitter::FitAll()\n";
   TFitResultPtr frptr = histo_all_->Fit(all_refit_, "RS0");
   *all_refit_cov_ = frptr->GetCovarianceMatrix();
+  all_refit_cov_->Print();
 }
 
 void ShapeFitter::DefineAllFunc(float left, float right) {
-  const int Npar_bckgr = 4;
+  const int Npar_bckgr = 5;
   const int Npar_sgnl = 8;
   const int Npar = Npar_bckgr + Npar_sgnl;// TODO generalize # of parameters
 
@@ -161,27 +172,32 @@ void ShapeFitter::RedefineBckgrAndSgnl(float left, float right) {
 }
 
 double AllShape(double* x, double* par) {
-  return BckgrShape(x, par) + SgnlShape(x, &par[4]);// TODO generalize # of parameters smhw. Maybe with functors? They should have getters...
+  return BckgrShape(x, par) + SgnlShape(x, &par[5]);// TODO generalize # of parameters smhw. Maybe with functors? They should have getters...
 }
 
 void ShapeFitter::FitBckgr(TH1F* histo) {
+  std::cout << "ShapeFitter::FitBckgr()\n";
   TFitResultPtr frptr = histo->Fit(bckgr_fit_, "RS0");
   *bckgr_fit_cov_ = frptr->GetCovarianceMatrix();
+  bckgr_fit_cov_->Print();
 }
 
 void ShapeFitter::DefineBckgrFunc(float left, float right) {
-  const int Npar = 4;
+  const int Npar = 5;
   bckgr_fit_ = new TF1("bckgr_fit", BckgrShape, left, right, Npar);
+  bckgr_fit_->FixParameter(4, mu_);
   bckgr_fit_cov_ = new TMatrixDSym(bckgr_fit_->GetNpar());
 }
 
 double BckgrShape(double* x, double* par) {
-  return par[0] + par[1] * x[0] + par[2] * pow(x[0], 2) + par[3] * pow(x[0], 3);
+  return par[0] + par[1] * (x[0]-par[4]) + par[2] * pow((x[0]-par[4]), 2) + par[3] * pow((x[0]-par[4]), 3);
 }
 
 void ShapeFitter::FitSgnl(TH1F* histo) {
+  std::cout << "ShapeFitter::FitSgnl()\n";
   TFitResultPtr frptr = histo->Fit(sgnl_fit_, "RS0");
   *sgnl_fit_cov_ = frptr->GetCovarianceMatrix();
+  sgnl_fit_cov_->Print();
 }
 
 //************ double-side crystal ball function ***************************************
@@ -192,22 +208,18 @@ double SgnlShape(double* x, double* par) {
   double mu = par[2];
   double sigma = par[3];
   double a1 = par[4];
-  double n1 = par[5];
+  double n1 = TMath::Power(10, par[5]);
   double a2 = par[6];
-  double n2 = par[7];
+  double n2 = TMath::Power(10, par[7]);
 
   double u = (x[0] - shift - mu) / sigma;
-  double A1 = TMath::Power(n1 / a1, n1) * TMath::Exp(-a1 * a1 / 2);
-  double A2 = TMath::Power(n2 / a2, n2) * TMath::Exp(-a2 * a2 / 2);
-  double B1 = n1 / a1 - a1;
-  double B2 = n2 / a2 - a2;
 
   if (u < -a1)
-    return factor * A1 * TMath::Power((B1 - u), -n1);
+    return factor*TMath::Exp(-a1*a1/2)*TMath::Power(1-a1*(u+a1)/n1, -n1);
   else if (u >= -a1 && u < a2)
     return factor * TMath::Exp(-u * u / 2);
   else if (u >= a2)
-    return factor * A2 * TMath::Power((B2 + u), -n2);
+    return factor*TMath::Exp(-a2*a2/2)*TMath::Power(1+a2*(u-a2)/n2, -n2);
   else
     return -1.;
 }
@@ -225,10 +237,24 @@ void ShapeFitter::DefineSgnlFunc(TH1F* histo, float left, float right) {
   sgnl_fit_->SetParameter(7, 1.);
   sgnl_fit_->SetParLimits(0, 0, 10 * histo->Interpolate(mu_));
   sgnl_fit_->SetParLimits(4, 0, 100);
-  sgnl_fit_->SetParLimits(5, 0, 100);
+  sgnl_fit_->SetParLimits(5, -5, 5);
   sgnl_fit_->SetParLimits(6, 0, 100);
-  sgnl_fit_->SetParLimits(7, 0, 100);
+  sgnl_fit_->SetParLimits(7, -5, 5);
 
   sgnl_fit_cov_ = new TMatrixDSym(sgnl_fit_->GetNpar());
 }
 //************ double-side crystal ball function ***************************************
+
+// double ShapeFitter::MyGetGradientPar(TF1* f, int i, double x, double eps) const {
+//   const double par_backup = f->GetParameter(i);
+//
+//   f->SetParameter(i, par_backup+eps/2);
+//   const double value_up = f->Eval(x);
+//
+//   f->SetParameter(i, par_backup-eps/2);
+//   const double value_low = f->Eval(x);
+//
+//   f->SetParameter(i, par_backup);
+//
+//   return (value_up - value_low)/eps;
+// }

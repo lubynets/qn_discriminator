@@ -4,15 +4,17 @@ float GetChi2TH1FTF1(TH1F* histo, TF1* func);
 
 void fit_shape() {
 
-  //   gROOT->Macro( "/home/oleksii/cbmdir/flow_drawing_tools/example/style.cc" );
+  gROOT->Macro( "/home/oleksii/cbmdir/flow_drawing_tools/example/style_1.cc" );
 
-  //   std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
-  //   const float mu = 1.115683;
-  //   const float sigma = 0.00145786;
+//   std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
+//   const float mu = 1.115683;
+//   const float sigma = 0.00145786;
+//   std::string particle = "#Lambda";
 
   std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.310.all.root";
   const float mu = 0.497611;
   const float sigma = 0.0037;
+  std::string particle = "K^{0}_{S}";
 
   TFile* fileIn = TFile::Open(fileName.c_str(), "read");
 
@@ -48,7 +50,7 @@ void fit_shape() {
   }
 
   std::vector<Qn::DataContainerStatDiscriminator> dcParamsBckgr;
-  dcParamsBckgr.resize(4);
+  dcParamsBckgr.resize(5);
   for (auto& dc : dcParamsBckgr) {
     dc.AddAxes(dcIn.GetAxes());
   }
@@ -94,27 +96,26 @@ void fit_shape() {
     dcPreFit[i].SetShape(shFtr.GetFuncSgnl(), shFtr.GetFuncBckgr());
 
     fileOut->cd("Fits");
-    TCanvas cc("cc", "", 1500, 900);
+    TCanvas cc("", "", 1500, 900);
     cc.cd();
+
     dcIn[i].SetTitle(binname.c_str());
     dcIn[i].GetXaxis()->SetRangeUser(mu - 16 * sigma, mu + 16 * sigma);
-    dcIn[i].Draw();
+    dcIn[i].SetLineWidth(2);
+    dcIn[i].SetStats(kFALSE);
+    dcIn[i].Draw("");
 
     shFtr.GetReGraphAll()->SetFillStyle(3001);
     shFtr.GetReGraphAll()->SetFillColor(kRed - 4);
     shFtr.GetReGraphAll()->SetLineColor(kRed);
-    shFtr.GetReGraphAll()->SetLineWidth(2);
     shFtr.GetReGraphAll()->Draw("l e3 same");
     shFtr.GetReGraphBckgr()->SetLineColor(kGreen + 2);
-    shFtr.GetReGraphBckgr()->SetLineWidth(2);
     shFtr.GetReGraphBckgr()->Draw("l same");
 
     shFtr.GetGraphAll()->SetLineColor(kRed);
     shFtr.GetGraphAll()->SetLineStyle(2);
-    shFtr.GetGraphAll()->SetLineWidth(2);
     shFtr.GetGraphAll()->Draw("l x same");
     shFtr.GetGraphBckgr()->SetLineColor(kGreen + 2);
-    shFtr.GetGraphBckgr()->SetLineWidth(2);
     shFtr.GetGraphBckgr()->SetLineStyle(2);
     shFtr.GetGraphBckgr()->Draw("l x same");
 
@@ -128,7 +129,8 @@ void fit_shape() {
     legend.SetTextFont(22);
     legend.Draw("same");
 
-    TPaveText binedges(0.12, 0.75, 0.27, 0.89, "brNDC");
+    TPaveText binedges(0.12, 0.75, 0.27, 0.92, "brNDC");
+    binedges.AddText(particle.c_str());
     binedges.AddText(("C: " + to_string_with_precision(C_lo, 2) + " - " + to_string_with_precision(C_hi, 2) + " %").c_str());
     binedges.AddText(("p_{T}: " + to_string_with_precision(pT_lo, 2) + " - " + to_string_with_precision(pT_hi, 2) + " GeV/c").c_str());
     binedges.AddText(("y_{LAB}: " + to_string_with_precision(y_lo, 2) + " - " + to_string_with_precision(y_hi, 2)).c_str());
@@ -137,42 +139,44 @@ void fit_shape() {
     binedges.SetTextFont(22);
     binedges.Draw("same");
 
-    std::vector<float> par_sgnl, parerr_sgnl;
-    par_sgnl.resize(8);
-    parerr_sgnl.resize(8);
-    std::vector<float> par_bckgr, parerr_bckgr;
-    par_bckgr.resize(4);
-    parerr_bckgr.resize(4);
     TF1* func_sgnl = shFtr.GetReFuncSgnl();
     TF1* func_bckgr = shFtr.GetReFuncBckgr();
-    for (int j = 0; j < func_sgnl->GetNpar(); j++) {
+    const int npar_sgnl = func_sgnl->GetNpar();
+    const int npar_bckgr = func_bckgr->GetNpar();
+    std::vector<float> par_sgnl, parerr_sgnl;
+    par_sgnl.resize(npar_sgnl);
+    parerr_sgnl.resize(npar_sgnl);
+    std::vector<float> par_bckgr, parerr_bckgr;
+    par_bckgr.resize(npar_bckgr);
+    parerr_bckgr.resize(npar_bckgr);
+    for (int j = 0; j < npar_sgnl; j++) {
       par_sgnl.at(j) = func_sgnl->GetParameter(j);
       parerr_sgnl.at(j) = func_sgnl->GetParError(j);
       dcParamsSgnl.at(j)[i].SetVEW(par_sgnl.at(j), parerr_sgnl.at(j));
     }
-    for (int j = 0; j < func_bckgr->GetNpar(); j++) {
+    for (int j = 0; j < npar_bckgr; j++) {
       par_bckgr.at(j) = func_bckgr->GetParameter(j);
       parerr_bckgr.at(j) = func_bckgr->GetParError(j);
       dcParamsBckgr.at(j)[i].SetVEW(par_bckgr.at(j), parerr_bckgr.at(j));
     }
 
-    TPaveText ptpar(0.72, 0.33, 0.87, 0.73, "brNDC");
-    ptpar.AddText("DSBC parameters");
+    TPaveText ptpar(0.77, 0.51, 0.95, 0.92, "brNDC");
+    ptpar.AddText("DSCB parameters");
     ptpar.AddText(("Height = " + to_string_with_precision(par_sgnl.at(0), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(0), 2)).c_str());
-    ptpar.AddText(("#mu_{ref} = " + to_string_with_precision(mu, 4)).c_str());
+//     ptpar.AddText(("#mu_{ref} = " + to_string_with_precision(mu, 4)).c_str());
     ptpar.AddText(("#mu - #mu_{ref} = (" + to_string_with_precision(par_sgnl.at(2) * 1e4, 3) + " #pm " + to_string_with_precision(parerr_sgnl.at(2) * 1e4, 3) + ") #times 10^{-4}").c_str());
     ptpar.AddText(("#sigma = (" + to_string_with_precision(par_sgnl.at(3) * 1e3, 3) + " #pm " + to_string_with_precision(parerr_sgnl.at(3) * 1e3, 3) + ") #times 10^{-3}").c_str());
     ptpar.AddText(("a_{1} = " + to_string_with_precision(par_sgnl.at(4), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(4), 2)).c_str());
-    ptpar.AddText(("n_{1} = " + to_string_with_precision(par_sgnl.at(5), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(5), 2)).c_str());
+    ptpar.AddText(("lg n_{1} = " + to_string_with_precision(par_sgnl.at(5), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(5), 2)).c_str());
     ptpar.AddText(("a_{2} = " + to_string_with_precision(par_sgnl.at(6), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(6), 2)).c_str());
-    ptpar.AddText(("n_{2} = " + to_string_with_precision(par_sgnl.at(7), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(7), 2)).c_str());
-    //     ptpar.AddText("pol3 parameters");
-    //     ptpar.AddText(("p_{0} = " + to_string_with_precision(par_bckgr.at(0), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(0), 2)).c_str());
-    //     ptpar.AddText(("p_{1} = " + to_string_with_precision(par_bckgr.at(1), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(1), 2)).c_str());
-    //     ptpar.AddText(("p_{2} = " + to_string_with_precision(par_bckgr.at(2), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(2), 2)).c_str());
-    //     ptpar.AddText(("p_{3} = " + to_string_with_precision(par_bckgr.at(3), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(3), 2)).c_str());
+    ptpar.AddText(("lg n_{2} = " + to_string_with_precision(par_sgnl.at(7), 2) + " #pm " + to_string_with_precision(parerr_sgnl.at(7), 2)).c_str());
+    ptpar.AddText("pol3 parameters");
+    ptpar.AddText(("p_{0} = " + to_string_with_precision(par_bckgr.at(0), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(0), 2)).c_str());
+    ptpar.AddText(("p_{1} = " + to_string_with_precision(par_bckgr.at(1), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(1), 2)).c_str());
+    ptpar.AddText(("p_{2} = " + to_string_with_precision(par_bckgr.at(2), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(2), 2)).c_str());
+    ptpar.AddText(("p_{3} = " + to_string_with_precision(par_bckgr.at(3), 2) + " #pm " + to_string_with_precision(parerr_bckgr.at(3), 2)).c_str());
     ptpar.SetFillColor(0);
-    ptpar.SetTextSize(0.03);
+    ptpar.SetTextSize(0.025);
     ptpar.SetTextFont(22);
     ptpar.Draw("same");
 
@@ -208,7 +212,7 @@ void fit_shape() {
   fileOut->cd();
   dcReFit.Write("ReFit");
   dcPreFit.Write("PreFit");
-  std::vector<std::string> SgnlParamNames = {"Height", "mu", "mu_shift", "sigma", "a1", "n1", "a2", "n2"};
+  std::vector<std::string> SgnlParamNames = {"Height", "mu", "mu_shift", "sigma", "a1", "lgn1", "a2", "lgn2"};
   std::vector<std::string> BckgrParamNames = {"p0", "p1", "p2", "p3"};
 
   fileOut->cd("Params/sgnl");
@@ -251,7 +255,7 @@ float GetChi2TH1FTF1(TH1F* histo, TF1* func) {
 
   ndf -= func->GetNumberFreeParameters();
 
-  std::cout << "chi2/ndf h-f = " << chi2 << " / " << ndf << "\n";
+//   std::cout << "chi2/ndf h-f = " << chi2 << " / " << ndf << "\n";
 
   return chi2 / ndf;
 }
