@@ -1,4 +1,5 @@
 float GetChi2TH1FTF1(TH1F* histo, TF1* func);
+std::pair<TGraph*, TGraph*> ErrorVsValue(TGraphErrors* graphIn);
 
 #include "Helper.hpp"
 
@@ -112,6 +113,16 @@ void fit_shape() {
     shFtr.GetReGraphBckgr()->SetLineColor(kGreen + 2);
     shFtr.GetReGraphBckgr()->Draw("l same");
 
+    TCanvas chelp("", "", 1500, 900);
+    chelp.cd();
+    auto grpair = ErrorVsValue(shFtr.GetReGraphAll());
+    grpair.first->SetTitle(binname.c_str());
+    grpair.first->GetXaxis()->SetTitle("y");
+    grpair.first->GetYaxis()->SetTitle("#Delta y^{2}");
+    grpair.first->Draw();
+//     grpair.first->Draw("same");
+    cc.cd();
+
     shFtr.GetGraphAll()->SetLineColor(kRed);
     shFtr.GetGraphAll()->SetLineStyle(2);
     shFtr.GetGraphAll()->Draw("l x same");
@@ -202,6 +213,7 @@ void fit_shape() {
     ptyield.Draw("same");
 
     cc.Write(binname.c_str());
+    chelp.Write(("help" + binname).c_str());
 
     dc_chi2_prefit[i].SetVEW(chi2_prefit);
     dc_chi2_fit[i].SetVEW(chi2_fit);
@@ -258,4 +270,18 @@ float GetChi2TH1FTF1(TH1F* histo, TF1* func) {
 //   std::cout << "chi2/ndf h-f = " << chi2 << " / " << ndf << "\n";
 
   return chi2 / ndf;
+}
+
+std::pair<TGraph*, TGraph*> ErrorVsValue(TGraphErrors* graphIn) {
+  TGraph* graphOut = new TGraph();
+  TGraph* graphOutSq = new TGraph();
+
+  for(int i=0; i<graphIn->GetN(); i++) {
+    const float y = graphIn->GetPointY(i);
+    const float ey = graphIn->GetErrorY(i);
+    graphOut->AddPoint(y, ey);
+    graphOutSq->AddPoint(y, ey*ey);
+  }
+
+  return {graphOut, graphOutSq};
 }
