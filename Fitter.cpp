@@ -18,6 +18,7 @@ void Fitter::Fit() {
 
   TFitResultPtr frptr = graph_v_->Fit("f", "S0");
   *cov = frptr->GetCovarianceMatrix();
+  cov->Print();
 
   v_fit_ = {f, cov};
   graph_fit_ = FuncWithErrors(v_fit_);

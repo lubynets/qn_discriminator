@@ -117,6 +117,10 @@ TGraphErrors* ShapeFitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_co
 void ShapeFitter::FitAll() {
   std::cout << "ShapeFitter::FitAll()\n";
   TFitResultPtr frptr = histo_all_->Fit(all_refit_, "RS0");
+//   TFitResultPtr frptr = histo_all_->Fit(all_refit_, "RS0VM");
+//   if(frptr->Status() == 4) {
+//     all_refit_ = all_fit_;
+//   }
   *all_refit_cov_ = frptr->GetCovarianceMatrix();
   all_refit_cov_->Print();
 }
