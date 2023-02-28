@@ -2,18 +2,18 @@ void fit_dv1dy_sim() {
   std::string evegen = "dcmqgsm";
 //   std::string evegen = "urqmd";
 
-  bool is_rebin_centrality = true;
-//   bool is_rebin_centrality = false;
+//   bool is_rebin_centrality = true;
+  bool is_rebin_centrality = false;
 
   std::string fileName = "/home/oleksii/cbmdir/working/qna/simtracksflow/" + evegen + "/v1andR1.stf." + evegen + ".root";
 
   TFile* fileIn = TFile::Open(fileName.c_str());
 
-  std::vector<std::string> particles{"lambda", "kshort", "xi", "pipos", "pineg"};
+  std::vector<std::string> particles{"lambda"/*, "kshort", "xi", "pipos", "pineg"*/};
   std::vector<std::string> components;
-  std::vector<std::string> subevents{"psd1", "psd2", "psd3",
+  std::vector<std::string> subevents{"psd1"/*, "psd2", "psd3",
                                      "etacut_1_charged", "etacut_2_charged", "etacut_3_charged",
-                                     "etacut_1_all", "etacut_2_all", "etacut_3_all"};
+                                     "etacut_1_all", "etacut_2_all", "etacut_3_all"*/};
   std::string step;
   bool average_comp;
 
@@ -56,6 +56,7 @@ void fit_dv1dy_sim() {
 
     Qn::DataContainerStatCalculate v1sim_in = *((Qn::DataContainerStatCalculate*) fileIn->Get(("v1/" + pa + "/uPsi/v1.uPsi.x1x1").c_str())) +
                                               *((Qn::DataContainerStatCalculate*) fileIn->Get(("v1/" + pa + "/uPsi/v1.uPsi.y1y1").c_str()));
+    const int Nsamples = v1sim_in.At(0).GetSampleMeans().size();
     v1sim_in = v1sim_in/2.;
     Qn::DataContainerStatCalculate v1sim = v1sim_in.Rebin({"SimParticles_pT", pt_bin_edges});
     if(is_rebin_centrality) v1sim = v1sim.Rebin({"SimEventHeader_centrality_impactpar", {0, 15, 40, 70}});
@@ -77,7 +78,8 @@ void fit_dv1dy_sim() {
     gex_sim.SetSelectAxis(axistofit.c_str());
 
     for (int i = 0; i < v1sim_reduced.size(); i++) {
-      TGraphErrors* gr_sim = gex_sim.GetGraph(v1sim_reduced.GetIndex(i));
+      gex_sim.ReduceDataContainerToBin(v1sim_reduced.GetIndex(i));
+      TGraphErrors* gr_sim = gex_sim.GetGraph();
 
       TF1* fsim = new TF1("fsim", "[0]+[1]*(x-[2])", fitaxis_lo, fitaxis_hi);
       fsim->FixParameter(2, midrapidity);
@@ -86,6 +88,23 @@ void fit_dv1dy_sim() {
 
       v1sim_intercept[i].SetVEW(fsim->GetParameter(0), fsim->GetParError(0));
       v1sim_slope[i].SetVEW(fsim->GetParameter(1), fsim->GetParError(1));
+      delete fsim;
+
+      std::vector<TGraph*> gr_sims = gex_sim.GetSamplesGraphs();
+      std::vector<double> samples_weights = gex_sim.GetSamplesWeights();
+      for(int isample = 0; isample<Nsamples; isample++) {
+        fsim = new TF1("fsim", "[0]+[1]*(x-[2])", fitaxis_lo, fitaxis_hi);
+        fsim->FixParameter(2, midrapidity);
+
+        gr_sims.at(isample)->Fit(fsim, "0");
+
+        v1sim_intercept[i].AddSampleMean(fsim->GetParameter(0));
+        v1sim_slope[i].AddSampleMean(fsim->GetParameter(1));
+        v1sim_intercept[i].AddSampleWeight(samples_weights.at(isample));
+        v1sim_slope[i].AddSampleWeight(samples_weights.at(isample));
+        delete fsim;
+        delete gr_sims.at(isample);
+      }
     }
     v1sim_intercept.Write("v1sim_intercept.psi.ave");
     v1sim_slope.Write("v1sim_slope.psi.ave");
@@ -134,7 +153,8 @@ void fit_dv1dy_sim() {
         gex_rec.SetSelectAxis(axistofit.c_str());
 
         for (int i = 0; i < v1sim_reduced.size(); i++) {
-          TGraphErrors* gr_rec = gex_rec.GetGraph(v1rec_reduced.GetIndex(i));
+          gex_rec.ReduceDataContainerToBin(v1rec_reduced.GetIndex(i));
+          TGraphErrors* gr_rec = gex_rec.GetGraph();
 
           TF1* frec = new TF1("frec", "[0]+[1]*(x-[2])", fitaxis_lo, fitaxis_hi);
           frec->FixParameter(2, midrapidity);
@@ -143,6 +163,23 @@ void fit_dv1dy_sim() {
 
           v1rec_intercept[i].SetVEW(frec->GetParameter(0), frec->GetParError(0));
           v1rec_slope[i].SetVEW(frec->GetParameter(1), frec->GetParError(1));
+          delete frec;
+
+          std::vector<TGraph*> gr_recs = gex_rec.GetSamplesGraphs();
+          std::vector<double> samples_weights = gex_rec.GetSamplesWeights();
+          for(int isample = 0; isample<Nsamples; isample++) {
+            frec = new TF1("frec", "[0]+[1]*(x-[2])", fitaxis_lo, fitaxis_hi);
+            frec->FixParameter(2, midrapidity);
+
+            gr_recs.at(isample)->Fit(frec, "0");
+
+            v1rec_intercept[i].AddSampleMean(frec->GetParameter(0));
+            v1rec_slope[i].AddSampleMean(frec->GetParameter(1));
+            v1rec_intercept[i].AddSampleWeight(samples_weights.at(isample));
+            v1rec_slope[i].AddSampleWeight(samples_weights.at(isample));
+            delete frec;
+            delete gr_recs.at(isample);
+          }
         }
 
         v1rec_intercept.Write(("v1rec_intercept." + se + "." + co).c_str());
