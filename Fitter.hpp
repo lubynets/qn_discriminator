@@ -60,16 +60,14 @@ class Fitter {
   double GetFitChi2Ndf() { return fit_chi2_ / fit_ndf_; };
   const std::vector<double>& GetFitParameters() { return fit_params_; };
   const std::vector<double>& GetFitErrors() { return fit_params_errors_; };
-  float EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const;  // TODO unite with the same function in ShapeFitter
-  TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;// TODO unite with the same function in ShapeFitter
+//   float EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const;  // TODO unite with the same function in ShapeFitter
+//   TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;// TODO unite with the same function in ShapeFitter
 
   void Fit();
 
  private:
   Qn::ShapeContainer* shape_{nullptr};
   TGraphErrors* graph_v_{nullptr};// to be fitted
-
-//   double MyGetGradientPar(TF1* f, int i, double x, double eps=0.01) const;
 
   std::pair<TF1*, TMatrixDSym*> v_fit_{nullptr, nullptr};
   TGraphErrors* graph_fit_{nullptr};// result of fit with errors

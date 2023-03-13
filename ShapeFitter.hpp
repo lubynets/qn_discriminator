@@ -40,7 +40,7 @@ class ShapeFitter {
  private:
   void FitSgnl(TH1F* histo);
   void DefineSgnlFunc(TH1F* histo, float left, float right);
-  TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;
+//   TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;
 
   // private:
 
@@ -51,7 +51,7 @@ class ShapeFitter {
   void FitBckgr(TH1F* histo);
   void FitAll();
   TH1F* SubtractBckgr(TH1F* histo, std::pair<TF1*, TMatrixDSym*> f_and_cov, float left, float right) const;
-  float EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const;
+//   float EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const;
 
 //   double MyGetGradientPar(TF1* f, int i, double x, double eps=0.01) const;
 

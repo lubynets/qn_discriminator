@@ -1,9 +1,10 @@
 #include "Fitter.hpp"
 
+#include "FitHelper.hpp"
+
 #include "TCanvas.h"
 #include "TFile.h"
 #include "TFitResult.h"
-#include "TMatrixD.h"
 
 void Fitter::Fit() {
   const int Npar = 3;
@@ -46,57 +47,42 @@ void Fitter::Fit() {
   graph_fit_bckgr_ = FuncWithErrors(v_fit_bckgr_);
 }
 
-float Fitter::EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const {// add check if npar of func is equal to dim cov
-  const int Npar = f_and_cov.first->GetNpar();
-  TMatrixD dfdp(Npar, 1);
-  for (int i = 0; i < Npar; i++) {
-    dfdp[i][0] = f_and_cov.first->GradientPar(i, x);
-//     dfdp[i][0] = MyGetGradientPar(f_and_cov.first, i, x[0], 0.0001);
-  }
-
-  TMatrixD dfdp_T = dfdp;
-  dfdp_T.T();
-
-  float result = std::sqrt((dfdp_T * (*f_and_cov.second) * dfdp)[0][0]);
-
-  if(!std::isfinite(result)) {
-    result = 0.;
-  }
-
-  return result;
-}
-
-TGraphErrors* Fitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const {
-  TGraphErrors* graph = new TGraphErrors();
-  const int Nsteps = 1000;
-  const float left = f_and_cov.first->GetXmin();
-  const float right = f_and_cov.first->GetXmax();
-  const float step = (right - left) / Nsteps;
-
-  double x = left;
-  int i = 0;
-  while (x <= right) {
-    const float y = f_and_cov.first->Eval(x);
-    const float ey = EvalError(&x, f_and_cov);
-    graph->SetPoint(i, x, y);
-    graph->SetPointError(i, 0, ey);
-    x += step;
-    i++;
-  }
-
-  return graph;
-}
-
-// double Fitter::MyGetGradientPar(TF1* f, int i, double x, double eps) const {
-//   const double par_backup = f->GetParameter(i);
+// float Fitter::EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const {// add check if npar of func is equal to dim cov
+//   const int Npar = f_and_cov.first->GetNpar();
+//   TMatrixD dfdp(Npar, 1);
+//   for (int i = 0; i < Npar; i++) {
+//     dfdp[i][0] = f_and_cov.first->GradientPar(i, x);
+//   }
 //
-//   f->SetParameter(i, par_backup+eps/2);
-//   const double value_up = f->Eval(x);
+//   TMatrixD dfdp_T = dfdp;
+//   dfdp_T.T();
 //
-//   f->SetParameter(i, par_backup-eps/2);
-//   const double value_low = f->Eval(x);
+//   float result = std::sqrt((dfdp_T * (*f_and_cov.second) * dfdp)[0][0]);
 //
-//   f->SetParameter(i, par_backup);
+//   if(!std::isfinite(result)) {
+//     result = 0.;
+//   }
 //
-//   return (value_up - value_low)/eps;
+//   return result;
+// }
+
+// TGraphErrors* Fitter::FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const {
+//   TGraphErrors* graph = new TGraphErrors();
+//   const int Nsteps = 1000;
+//   const float left = f_and_cov.first->GetXmin();
+//   const float right = f_and_cov.first->GetXmax();
+//   const float step = (right - left) / Nsteps;
+//
+//   double x = left;
+//   int i = 0;
+//   while (x <= right) {
+//     const float y = f_and_cov.first->Eval(x);
+//     const float ey = EvalError(&x, f_and_cov);
+//     graph->SetPoint(i, x, y);
+//     graph->SetPointError(i, 0, ey);
+//     x += step;
+//     i++;
+//   }
+//
+//   return graph;
 // }

@@ -34,7 +34,7 @@ set(SOURCES ShapeFitter.cpp
             GraphExtractor.cpp)
             
 string(REPLACE ".cpp" ".hpp" HEADERS "${SOURCES}")
-list(APPEND HEADERS "Helper.hpp" "QnToolsHelper.hpp")
+list(APPEND HEADERS "Helper.hpp" "QnToolsHelper.hpp" "FitHelper.hpp")
 
 include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}
