@@ -2,18 +2,18 @@ void fit_dv1dy_sim() {
   std::string evegen = "dcmqgsm";
 //   std::string evegen = "urqmd";
 
-//   bool is_rebin_centrality = true;
-  bool is_rebin_centrality = false;
+  bool is_rebin_centrality = true;
+//   bool is_rebin_centrality = false;
 
   std::string fileName = "/home/oleksii/cbmdir/working/qna/simtracksflow/" + evegen + "/v1andR1.stf." + evegen + ".root";
 
   TFile* fileIn = TFile::Open(fileName.c_str());
 
-  std::vector<std::string> particles{"lambda"/*, "kshort", "xi", "pipos", "pineg"*/};
+  std::vector<std::string> particles{"lambda", "kshort", "xi", "pipos", "pineg"};
   std::vector<std::string> components;
-  std::vector<std::string> subevents{"psd1"/*, "psd2", "psd3",
+  std::vector<std::string> subevents{"psd1", "psd2", "psd3",
                                      "etacut_1_charged", "etacut_2_charged", "etacut_3_charged",
-                                     "etacut_1_all", "etacut_2_all", "etacut_3_all"*/};
+                                     "etacut_1_all", "etacut_2_all", "etacut_3_all"};
   std::string step;
   bool average_comp;
 

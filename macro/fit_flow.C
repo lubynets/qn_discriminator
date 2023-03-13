@@ -5,9 +5,10 @@ void fit_flow() {
 
   gROOT->Macro("/home/oleksii/cbmdir/flow_drawing_tools/example/style_1.cc");
 
-  std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.3122.root";
-  std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.3122.set4.all.root";
+  std::string shapefilename = "/home/oleksii/cbmdir/working/qna/inv_mass_flow/shapes/shapes.lambda.root";
+  std::string v1filename = "/home/oleksii/cbmdir/working/qna/inv_mass_flow/cl.imf.dcmqgsm.12agev.root";
   const float mu = 1.115683;
+  std::string particle = "lambda";
 
 //   std::string shapefilename = "/home/oleksii/cbmdir/working/qna/shapes/shape_fit.dcmqgsm.12agev.recpid.310.root";
 //   std::string v1filename = "/home/oleksii/cbmdir/working/qna/aXmass/v1andR1.dcmqgsm.apr20.recpid.lightcuts1.310.set4.root";
@@ -39,9 +40,10 @@ void fit_flow() {
   for (auto& co : components) {
 
     Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>> lambda_psi_pre =
-        Qn::DataContainerStatCalculate(*(Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>>*) v1file->Get(("v1/uQ_R1_sub4_sts_pipos/v1.u_rec_RESCALED.psd2_RECENTERED.res_sub4_sts_pipos." + co).c_str()));
+    Qn::DataContainerStatCalculate(*(Qn::DataContainer<Qn::StatCollect, Qn::Axis<double>>*) v1file->Get(("rec/u_" + particle + "_rec_imf_RESCALED.Q_psi_PLAIN." + co).c_str()));
 
-    auto lambda_psi = lambda_psi_pre.Rebin({"AnaEventHeader_centrality_tracks", {0, 10, 20, 40, 70}});
+//     auto lambda_psi = lambda_psi_pre.Rebin({"AnaEventHeader_centrality_tracks", {0, 10, 20, 40, 70}});
+    auto lambda_psi = lambda_psi_pre;
 
     const double invmass_lo = lambda_psi.GetAxis(invmassaxis.c_str()).GetFirstBinEdge();
     const double invmass_hi = lambda_psi.GetAxis(invmassaxis.c_str()).GetLastBinEdge();
@@ -68,7 +70,8 @@ void fit_flow() {
     dirFit->cd();
 
     for (int i = 0; i < shcntr->size(); i++) {
-      TGraphErrors* gr = gex.GetGraph(shcntr->GetIndex(i));
+      gex.ReduceDataContainerToBin(shcntr->GetIndex(i));
+      TGraphErrors* gr = gex.GetGraph();
       std::vector indices = shcntr->GetIndex(i);
       std::string binname = "C" + StringBinNumber(indices.at(0) + 1) + "_pT" + StringBinNumber(indices.at(1) + 1) + "_y" + StringBinNumber(indices.at(2) + 1) + "." + co;
       const float C_lo = shcntr->GetAxis("centrality").GetLowerBinEdge(indices.at(0));

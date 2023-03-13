@@ -7,20 +7,21 @@ void fit_shape() {
 
   gROOT->Macro( "/home/oleksii/cbmdir/flow_drawing_tools/example/style_1.cc" );
 
-//   std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.3122.all.root";
-//   const float mu = 1.115683;
-//   const float sigma = 0.00145786;
-//   std::string particle = "#Lambda";
+  std::string fileName = "/home/oleksii/cbmdir/working/qna/inv_mass_flow/shapes/massDC.imf.dcmqgsm.lambda.root";
+  const float mu = 1.115683;
+  const float sigma = 0.00145786;
+  std::string particle = "#Lambda";
 
-  std::string fileName = "/home/oleksii/cbmdir/working/qna/shapes/massDC.apr20.dcmqgsm.12agev.recpid.lightcuts1.set4.310.all.root";
-  const float mu = 0.497611;
-  const float sigma = 0.0037;
-  std::string particle = "K^{0}_{S}";
+//   std::string fileName = "/home/oleksii/cbmdir/working/qna/inv_mass_flow/shapes/massDC.imf.dcmqgsm.kshort.root";
+//   const float mu = 0.497611;
+//   const float sigma = 0.0037;
+//   std::string particle = "K^{0}_{S}";
 
   TFile* fileIn = TFile::Open(fileName.c_str(), "read");
 
-  Qn::DataContainer<TH1F, Qn::Axis<double>> dcprimary = *(fileIn->Get<Qn::DataContainer<TH1F, Qn::Axis<double>>>("dcmass"));
-  auto dcIn = dcprimary.Rebin({"centrality", {0, 10, 20, 40, 70}});
+  Qn::DataContainer<TH1F, Qn::Axis<double>> dcprimary = *(fileIn->Get<Qn::DataContainer<TH1F, Qn::Axis<double>>>("dcmass_all"));
+//   auto dcIn = dcprimary.Rebin({"centrality", {0, 10, 20, 40, 70}});
+  auto dcIn = dcprimary;
 
   //
   // all              shape of sgnl&bckgr together (the only distribution we will operate with in real life)
@@ -113,15 +114,15 @@ void fit_shape() {
     shFtr.GetReGraphBckgr()->SetLineColor(kGreen + 2);
     shFtr.GetReGraphBckgr()->Draw("l same");
 
-    TCanvas chelp("", "", 1500, 900);
-    chelp.cd();
-    auto grpair = ErrorVsValue(shFtr.GetReGraphAll());
-    grpair.first->SetTitle(binname.c_str());
-    grpair.first->GetXaxis()->SetTitle("y");
-    grpair.first->GetYaxis()->SetTitle("#Delta y^{2}");
-    grpair.first->Draw();
-//     grpair.first->Draw("same");
-    cc.cd();
+//     TCanvas chelp("", "", 1500, 900);
+//     chelp.cd();
+//     auto grpair = ErrorVsValue(shFtr.GetReGraphAll());
+//     grpair.first->SetTitle(binname.c_str());
+//     grpair.first->GetXaxis()->SetTitle("y");
+//     grpair.first->GetYaxis()->SetTitle("#Delta y^{2}");
+//     grpair.first->Draw();
+// //     grpair.first->Draw("same");
+//     cc.cd();
 
     shFtr.GetGraphAll()->SetLineColor(kRed);
     shFtr.GetGraphAll()->SetLineStyle(2);
@@ -213,7 +214,7 @@ void fit_shape() {
     ptyield.Draw("same");
 
     cc.Write(binname.c_str());
-    chelp.Write(("help" + binname).c_str());
+//     chelp.Write(("help" + binname).c_str());
 
     dc_chi2_prefit[i].SetVEW(chi2_prefit);
     dc_chi2_fit[i].SetVEW(chi2_fit);
