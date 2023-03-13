@@ -69,9 +69,13 @@ void fit_flow() {
 
     dirFit->cd();
 
+    const int Nsamples = lambda_psi.At(0).GetSampleMeans().size();
+
     for (int i = 0; i < shcntr->size(); i++) {
       gex.ReduceDataContainerToBin(shcntr->GetIndex(i));
       TGraphErrors* gr = gex.GetGraph();
+      std::vector<double> samples_weights = gex.GetSamplesWeights();
+      std::vector<TGraph*> grs = gex.GetSamplesGraphs();
       std::vector indices = shcntr->GetIndex(i);
       std::string binname = "C" + StringBinNumber(indices.at(0) + 1) + "_pT" + StringBinNumber(indices.at(1) + 1) + "_y" + StringBinNumber(indices.at(2) + 1) + "." + co;
       const float C_lo = shcntr->GetAxis("centrality").GetLowerBinEdge(indices.at(0));
@@ -98,7 +102,9 @@ void fit_flow() {
       fitter.SetMu(mu);
       fitter.SetShape(&shcntr->At(i));
       fitter.SetGraphToFit(gr);
+      fitter.SetBsGraphsToFit(grs);
       fitter.Fit();
+//       fitter.Print();
 
       TCanvas c1("", "", 1500, 900);
       c1.cd();
@@ -182,6 +188,15 @@ void fit_flow() {
       dc_bckgr_1[i].SetWeight(bckgr_weight);
 
       dc_fit_chi2ndf[i].SetVEW(chi2_fit);
+
+      for(int isample=0; isample<Nsamples; isample++) {
+        dc_signal[i].AddSampleMean(fitter.GetBsFitParameter(isample, 0));
+        dc_bckgr_0[i].AddSampleMean(fitter.GetBsFitParameter(isample, 1));
+        dc_bckgr_1[i].AddSampleMean(fitter.GetBsFitParameter(isample, 2));
+        dc_signal[i].AddSampleWeight(samples_weights.at(isample));
+        dc_bckgr_0[i].AddSampleWeight(samples_weights.at(isample));
+        dc_bckgr_1[i].AddSampleWeight(samples_weights.at(isample));
+      }
 
       std::cout << "\n\n";
 

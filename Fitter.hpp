@@ -40,6 +40,14 @@ class MyFunctor// TODO rename
   Qn::ShapeContainer* shape_{nullptr};
 };
 
+class FitterBootStrap {
+public:
+  TGraph* bs_graph_v_{nullptr};
+//   TF1* bs_v_fit_{nullptr};
+  std::vector<double> bs_fit_params_;
+  double bs_fit_chi2_{-999.};
+};
+
 class Fitter {
  public:
   Fitter() = default;
@@ -48,6 +56,7 @@ class Fitter {
   void SetMu(float value) { mu_ = value; }
   void SetShape(Qn::ShapeContainer* shape) { shape_ = shape; };
   void SetGraphToFit(TGraphErrors* graph) { graph_v_ = graph; };
+  void SetBsGraphsToFit(const std::vector<TGraph*> graphs);
   TGraphErrors* GetGraphToFit() const { return graph_v_; };
   TF1* GetVFit() const { return v_fit_.first; };
   TGraphErrors* GetGraphFit() const { return graph_fit_; };
@@ -60,15 +69,15 @@ class Fitter {
   double GetFitChi2Ndf() { return fit_chi2_ / fit_ndf_; };
   const std::vector<double>& GetFitParameters() { return fit_params_; };
   const std::vector<double>& GetFitErrors() { return fit_params_errors_; };
-//   float EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const;  // TODO unite with the same function in ShapeFitter
-//   TGraphErrors* FuncWithErrors(std::pair<TF1*, TMatrixDSym*> f_and_cov) const;// TODO unite with the same function in ShapeFitter
+  float GetBsFitParameter(int isample, int ipar) const { return fbs_.at(isample).bs_fit_params_.at(ipar); }
 
+  void Print() const;
   void Fit();
 
  private:
   Qn::ShapeContainer* shape_{nullptr};
   TGraphErrors* graph_v_{nullptr};// to be fitted
-
+  void AddBsGraphToFit(TGraph* graph);
   std::pair<TF1*, TMatrixDSym*> v_fit_{nullptr, nullptr};
   TGraphErrors* graph_fit_{nullptr};// result of fit with errors
   std::pair<TF1*, TMatrixDSym*> v_fit_bckgr_{nullptr, nullptr};// only bckgr's contribution to flow
@@ -79,6 +88,8 @@ class Fitter {
   double fit_chi2_{-999.};
   int fit_ndf_{-999};
   float mu_{1.115683};
+
+  std::vector<FitterBootStrap> fbs_;
 };
 
 #endif//Fitter_H

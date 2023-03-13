@@ -45,6 +45,63 @@ void Fitter::Fit() {
   }
 
   graph_fit_bckgr_ = FuncWithErrors(v_fit_bckgr_);
+
+  // -------------- begin fitting of BootStrap samples ---------------------
+  TF1* fu{nullptr};
+  MyFunctor functu(shape_);
+  functu.SetMu(mu_);
+  for(auto& bs : fbs_) {
+    fu = new TF1("fu", functu, graphleft - 0.0001, graphright + 0.0001, Npar);
+    bs.bs_graph_v_ -> Fit("fu", "0");
+    bs.bs_fit_chi2_ = fu->GetChisquare();
+    for (int i = 0; i < Npar; i++) {
+      bs.bs_fit_params_.push_back(fu->GetParameter(i));
+    }
+    delete fu;
+  }
+  // --------------- end fitting of BootStrap samples ----------------------
+}
+
+void Fitter::AddBsGraphToFit(TGraph* graph) {
+  fbs_.push_back(FitterBootStrap());
+  fbs_.back().bs_graph_v_ = graph;
+}
+
+void Fitter::SetBsGraphsToFit(const std::vector<TGraph*> graphs) {
+  for(auto& g : graphs) {
+    AddBsGraphToFit(g);
+  }
+}
+
+void Fitter::Print() const {
+  std::cout << "\nFitter::Print()\n";
+  std::cout << "Main fit:\n";
+  std::cout << "Fit parameters:\n";
+  for(auto& par : fit_params_){
+    std::cout << par << "\t";
+  }
+  std::cout << "\n";
+  std::cout << "Fit parameter errors:\n";
+  for(auto& per : fit_params_errors_){
+    std::cout << per << "\t";
+  }
+  std::cout << "\n";
+  std::cout << "Chi2 / NDF = " << fit_chi2_ << " / " << fit_ndf_ << "\n\n";
+
+  if(fbs_.size() == 0) return;
+  std::cout << "BootStrap samples fit:\n";
+  for(int i=0; i<fbs_.at(0).bs_fit_params_.size(); i++) {
+    std::cout << i << "-th parameter:\t";
+    for(auto& bs : fbs_) {
+      std::cout << bs.bs_fit_params_.at(i) << "\t";
+    }
+    std::cout << "\n";
+  }
+  std::cout << "Chi2:\t";
+  for(auto& bs : fbs_) {
+    std::cout << bs.bs_fit_chi2_ << "\t";
+  }
+  std::cout << "\n";
 }
 
 // float Fitter::EvalError(double* x, std::pair<TF1*, TMatrixDSym*> f_and_cov) const {// add check if npar of func is equal to dim cov
