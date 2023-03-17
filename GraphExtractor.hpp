@@ -14,7 +14,9 @@ class GraphExtractor {
   GraphExtractor() = default;
   virtual ~GraphExtractor() = default;
 
-  void SetDataContainer(Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>>* datacontainer) { data_container_ = datacontainer; };
+  void SetDataContainer(Qn::DataContainer<Qn::StatDiscriminator, Qn::Axis<double>>* datacontainer) { data_container_ = datacontainer; };
+  void SetDataContainer(Qn::DataContainer<Qn::StatCollect, Qn::Axis<double>>* datacontainer);
+  void SetDataContainer(Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>>* datacontainer);
   void SetNamesAxesToExclude(std::vector<std::string> names_axes_to_exclude) { names_axes_to_exclude_ = names_axes_to_exclude; };
   void SetSelectAxis(std::string select_axis);
 
@@ -30,8 +32,8 @@ class GraphExtractor {
   std::vector<std::vector<double>> GetAxesBinEdges();
 
  private:
-  Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>> data_container_reduced_;
-  Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>>* data_container_{nullptr};
+  Qn::DataContainer<Qn::StatDiscriminator, Qn::Axis<double>> data_container_reduced_;
+  Qn::DataContainer<Qn::StatDiscriminator, Qn::Axis<double>>* data_container_{nullptr};
   std::vector<std::string> names_axes_to_exclude_;
   std::string select_axis_;
 };

@@ -2,6 +2,14 @@
 
 #include "QnToolsHelper.hpp"
 
+void GraphExtractor::SetDataContainer(Qn::DataContainer<Qn::StatCollect, Qn::Axis<double>>* datacontainer) {
+  data_container_ = new Qn::DataContainer<Qn::StatDiscriminator, Qn::Axis<double>>(*datacontainer);
+}
+
+void GraphExtractor::SetDataContainer(Qn::DataContainer<Qn::StatCalculate, Qn::Axis<double>>* datacontainer) {
+  data_container_ = new Qn::DataContainer<Qn::StatDiscriminator, Qn::Axis<double>>(*datacontainer);
+}
+
 void GraphExtractor::SetSelectAxis(std::string select_axis) {
   select_axis_ = select_axis;
 }

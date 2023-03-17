@@ -5,7 +5,7 @@
 
 using namespace Qn;
 
-inline std::vector<TGraph*> SamplesToTGraph(const DataContainer<StatCalculate, AxisD> &data) {
+inline std::vector<TGraph*> SamplesToTGraph(const DataContainer<StatDiscriminator, AxisD> &data) {
   if (data.GetAxes().size() > 1) {
     std::cout << "Data container has more than one dimension. " << std::endl;
     std::cout << "Cannot draw as Graph. Use Projection() to make it one dimensional." << std::endl;
@@ -39,7 +39,7 @@ inline std::vector<TGraph*> SamplesToTGraph(const DataContainer<StatCalculate, A
   return graphs;
 }
 
-inline std::vector<double> SamplesWeights(const DataContainer<StatCalculate, AxisD> &data) {
+inline std::vector<double> SamplesWeights(const DataContainer<StatDiscriminator, AxisD> &data) {
   if (data.GetAxes().size() > 1) {
     std::cout << "Data container has more than one dimension. " << std::endl;
     std::cout << "Cannot draw as Graph. Use Projection() to make it one dimensional." << std::endl;
