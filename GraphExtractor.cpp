@@ -19,7 +19,7 @@ TGraphErrors* GraphExtractor::GetGraph(std::vector<size_t> bin) {
   return GetGraph();
 }
 
-std::vector<TGraph*> GraphExtractor::GetSamplesGraphs(std::vector<size_t> bin) {
+std::vector<TGraphErrors*> GraphExtractor::GetSamplesGraphs(std::vector<size_t> bin) {
   ReduceDataContainerToBin(bin);
   return GetSamplesGraphs();
 }
@@ -37,11 +37,11 @@ TGraphErrors* GraphExtractor::GetGraph() const {
   return graph;
 }
 
-std::vector<TGraph*> GraphExtractor::GetSamplesGraphs() const {
+std::vector<TGraphErrors*> GraphExtractor::GetSamplesGraphs() const {
   if(data_container_reduced_.size() == 0 || data_container_reduced_.GetDimension() != 1) {
     throw std::runtime_error("GraphExtractor::GetSamplesGraphs() - data_container_reduced_ must be reduced using ReduceDataContainerToBin() function");
   }
-  std::vector<TGraph*> graphs = SamplesToTGraph(data_container_reduced_);
+  std::vector<TGraphErrors*> graphs = SamplesToTGraph(data_container_reduced_);
   return graphs;
 }
 

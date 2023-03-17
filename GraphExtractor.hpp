@@ -4,7 +4,6 @@
 #include "DataContainer.hpp"
 
 #include "TGraphErrors.h"
-#include "TGraph.h"
 
 #include <string>
 #include <vector>
@@ -21,10 +20,10 @@ class GraphExtractor {
   void SetSelectAxis(std::string select_axis);
 
   TGraphErrors* GetGraph(std::vector<size_t> bin);
-  std::vector<TGraph*> GetSamplesGraphs(std::vector<size_t> bin);
+  std::vector<TGraphErrors*> GetSamplesGraphs(std::vector<size_t> bin);
   std::vector<double> GetSamplesWeights(std::vector<size_t> bin);
   TGraphErrors* GetGraph() const;
-  std::vector<TGraph*> GetSamplesGraphs() const;
+  std::vector<TGraphErrors*> GetSamplesGraphs() const;
   std::vector<double> GetSamplesWeights() const;
   void ReduceDataContainerToBin(std::vector<size_t> bin);
 

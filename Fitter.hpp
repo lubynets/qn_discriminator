@@ -4,7 +4,6 @@
 #include "ShapeContainer.hpp"
 
 #include "TF1.h"
-#include "TGraph.h"
 #include "TGraphErrors.h"
 #include "TH1.h"
 #include "TMatrixDSym.h"
@@ -42,7 +41,7 @@ class MyFunctor// TODO rename
 
 class FitterBootStrap {
 public:
-  TGraph* bs_graph_v_{nullptr};
+  TGraphErrors* bs_graph_v_{nullptr};
 //   TF1* bs_v_fit_{nullptr};
   std::vector<double> bs_fit_params_;
   double bs_fit_chi2_{-999.};
@@ -56,7 +55,7 @@ class Fitter {
   void SetMu(float value) { mu_ = value; }
   void SetShape(Qn::ShapeContainer* shape) { shape_ = shape; };
   void SetGraphToFit(TGraphErrors* graph) { graph_v_ = graph; };
-  void SetBsGraphsToFit(const std::vector<TGraph*> graphs);
+  void SetBsGraphsToFit(const std::vector<TGraphErrors*> graphs);
   TGraphErrors* GetGraphToFit() const { return graph_v_; };
   TF1* GetVFit() const { return v_fit_.first; };
   TGraphErrors* GetGraphFit() const { return graph_fit_; };
@@ -77,7 +76,7 @@ class Fitter {
  private:
   Qn::ShapeContainer* shape_{nullptr};
   TGraphErrors* graph_v_{nullptr};// to be fitted
-  void AddBsGraphToFit(TGraph* graph);
+  void AddBsGraphToFit(TGraphErrors* graph);
   std::pair<TF1*, TMatrixDSym*> v_fit_{nullptr, nullptr};
   TGraphErrors* graph_fit_{nullptr};// result of fit with errors
   std::pair<TF1*, TMatrixDSym*> v_fit_bckgr_{nullptr, nullptr};// only bckgr's contribution to flow

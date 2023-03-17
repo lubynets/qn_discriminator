@@ -62,12 +62,12 @@ void Fitter::Fit() {
   // --------------- end fitting of BootStrap samples ----------------------
 }
 
-void Fitter::AddBsGraphToFit(TGraph* graph) {
+void Fitter::AddBsGraphToFit(TGraphErrors* graph) {
   fbs_.push_back(FitterBootStrap());
   fbs_.back().bs_graph_v_ = graph;
 }
 
-void Fitter::SetBsGraphsToFit(const std::vector<TGraph*> graphs) {
+void Fitter::SetBsGraphsToFit(const std::vector<TGraphErrors*> graphs) {
   for(auto& g : graphs) {
     AddBsGraphToFit(g);
   }
