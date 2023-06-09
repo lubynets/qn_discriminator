@@ -31,7 +31,9 @@ find_package(QnTools REQUIRED)
 #
 set(SOURCES ShapeFitter.cpp
             Fitter.cpp
-            GraphExtractor.cpp)
+            GraphExtractor.cpp
+            Sig2BckgrSimple.cpp
+            FitterSimple.cpp)
             
 string(REPLACE ".cpp" ".hpp" HEADERS "${SOURCES}")
 list(APPEND HEADERS "Helper.hpp" "QnToolsHelper.hpp" "FitHelper.hpp")

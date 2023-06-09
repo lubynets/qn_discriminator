@@ -10,5 +10,7 @@
 // #pragma link C++ class  NDimFrame+;
 #pragma link C++ class  GraphExtractor+;
 #pragma link C++ class  ShapeFitter+;
+#pragma link C++ class  Sig2BckgrSimple+;
+#pragma link C++ class  FitterSimple+;
 
 #endif
